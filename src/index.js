@@ -14,10 +14,12 @@
 
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { HashRouter as Router } from 'react-router-dom';
+import { BrowserRouter as Router } from 'react-router-dom';
 import { createStore } from 'redux';
 import { Provider } from 'react-redux';
 import registerServiceWorker from './registerServiceWorker';
+import 'patternfly/dist/css/patternfly.min.css';
+import 'patternfly/dist/css/patternfly-additions.min.css';
 import './App.css';
 import App from './App';
 
@@ -25,7 +27,8 @@ const store = createStore((state = []) => state);
 
 ReactDOM.render(
   <Provider store={store}>
-    <Router>
+    {/* Change to / after tech-preview phase */}
+    <Router basename="/ui">
       <App />
     </Router>
   </Provider>,
