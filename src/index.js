@@ -18,6 +18,8 @@ import { HashRouter as Router } from 'react-router-dom';
 import { createStore } from 'redux';
 import { Provider } from 'react-redux';
 import registerServiceWorker from './registerServiceWorker';
+import 'patternfly/dist/css/patternfly.min.css';
+import 'patternfly/dist/css/patternfly-additions.min.css';
 import './App.css';
 import App from './App';
 
