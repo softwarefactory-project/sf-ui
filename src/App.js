@@ -83,7 +83,7 @@ class App extends React.Component {
   render() {
     const { location } = this.props;
     const activeItem = this.menu.find(
-      item => location.pathname.indexOf(item.to) > -1
+      item => location.pathname === item.to
     );
     const vertNavItems = this.menu
             .filter(item => item.iconClass)
