@@ -5,14 +5,11 @@ import Status from './pages/Status';
 import Jobs from './pages/Jobs';
 import Builds from './pages/Builds';
 
+import CiExplorer from './pages/CiExplorer';
+
 const baseName = '/';
 
 const routes = () => [
-  {
-    title: 'Welcome',
-    to: '/welcome',
-    component: Welcome
-  },
   {
     iconClass: 'fa pficon-in-progress',
     title: 'Review',
@@ -20,7 +17,7 @@ const routes = () => [
     component: Review
   },
   {
-    iconClass: 'fa fa-dashboard',
+    iconClass: 'fa pficon-integration',
     title: 'CI',
     to: '/ci',
     subItems: [
@@ -44,6 +41,18 @@ const routes = () => [
       }
     ]
   },
+  {
+    iconClass: 'fa fa-tachometer',
+    title: 'Ci Explorer',
+    to: '/ciExplorer',
+    component: CiExplorer
+  },
+  {
+    title: 'Welcome',
+    to: '/welcome',
+    component: Welcome
+  },
+
 ];
 
 export { baseName, routes };

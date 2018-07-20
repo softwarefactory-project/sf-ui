@@ -70,7 +70,7 @@ class App extends React.Component {
     return (
       <Switch>
         {allRoutes}
-        <Redirect from="*" to="/welcome" key="default-route" />
+        <Redirect from="*" to="/ciExplorer" key="default-route" />
       </Switch>
     );
   };
