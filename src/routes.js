@@ -7,6 +7,9 @@ import Builds from './pages/Builds';
 
 import CiExplorer from './pages/CiExplorer';
 
+// Log-Classify
+import LogClassify from './pages/LogClassify';
+
 const baseName = '/';
 
 const routes = () => [
@@ -46,6 +49,17 @@ const routes = () => [
     title: 'Status CI',
     to: '/status/ci',
     component: CiExplorer
+  },
+  {
+    iconClass: 'fa pficon-zone',
+    title: 'Log Classify',
+    to: '/log-classify',
+    component: LogClassify
+  },
+  {
+    title: 'Log Classify',
+    to: '/log-classify/:anomalyId',
+    component: LogClassify
   },
   {
     title: 'Welcome',
