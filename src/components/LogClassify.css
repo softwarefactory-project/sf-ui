@@ -1,0 +1,14 @@
+.LogLine {
+  text-align: left;
+  margin: 0px;
+  padding: 0px;
+  font-family: monospace, monospace;
+}
+
+input.LogSlider {
+  float: left;
+  width: 100px;
+  margin-right: 10px;
+  border: 0px;
+  cursor: pointer;
+}
