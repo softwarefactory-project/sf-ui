@@ -20,6 +20,11 @@ const routes = () => [
     component: Review
   },
   {
+    title: 'Review',
+    to: '/review/:path(.*)',
+    component: Review
+  },
+  {
     iconClass: 'fa pficon-integration',
     title: 'CI',
     to: '/ci',
@@ -66,7 +71,6 @@ const routes = () => [
     to: '/welcome',
     component: Welcome
   },
-
 ];
 
 export { baseName, routes };

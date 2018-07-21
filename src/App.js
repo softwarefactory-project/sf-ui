@@ -42,6 +42,7 @@ class App extends React.Component {
     const { history } = this.props;
     if (target.getAttribute) {
       const href = target.getAttribute('href');
+      console.log("Pushing " + href);
       history.push(href);
     }
   };
