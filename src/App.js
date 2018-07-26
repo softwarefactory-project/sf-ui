@@ -17,17 +17,22 @@ import PropTypes from 'prop-types';
 import { withRouter } from 'react-router';
 import { connect } from 'react-redux';
 import { Route, Redirect, Switch } from 'react-router-dom';
+import cookie from 'react-cookies';
 import {
+  Grid,
   VerticalNav,
   VerticalNavItem,
   VerticalNavSecondaryItem,
   VerticalNavIconBar,
+  NavItem,
   Masthead,
   Icon,
   MenuItem
 } from 'patternfly-react';
 import logo from './img/logo.png';
 import { routes } from './routes';
+import LoginApp from './pages/LoginPage';
+
 
 class App extends React.Component {
   constructor() {
@@ -35,20 +40,26 @@ class App extends React.Component {
 
     this.menu = routes();
     this.state = {
-      about: null
-    }
+      about: null,
+      loginPage: true, // false
+    };
+    this.onLogin = this.onLogin.bind(this);
+    this.onLogout = this.onLogout.bind(this);
   }
-  handleNavClick = (event: Event) => {
-    event.preventDefault();
-    const target = (event.currentTarget: any);
-    const { history } = this.props;
-    if (target.getAttribute) {
-      const href = target.getAttribute('href');
-      console.log("Pushing " + href);
-      history.push(href);
-    }
+
+  onLogin() {
+    this.setState({loginPage: true});
   };
 
+  onLogout() {
+    console.log("logout");
+  };
+
+  componentWillMount() {
+    this.setState({
+      userId: cookie.load('userId'),
+    });
+  }
   renderContent = () => {
     const allRoutes = [];
     this.menu.map((item, index) => {
@@ -83,14 +94,13 @@ class App extends React.Component {
     history.push(path);
   };
 
-  render() {
-    const { location, about } = this.props;
+  renderMain() {
+    const { userId } = this.state;
+    const { about, location } = this.props;
+
     const activeItem = this.menu.find(
       item => location.pathname === item.to
     );
-    if (!about.services) {
-      about.services = [];
-    }
     const vertNavItems = this.menu
           .filter(item => item.iconClass && (
             !item.serviceName ||
@@ -116,6 +126,33 @@ class App extends React.Component {
       </VerticalNavItem>
     ));
 
+    let loginNav;
+
+    if (userId) {
+      loginNav = (
+        <Masthead.Dropdown
+          id="user"
+          title={
+              <span>
+                  <Icon type="pf" name="user" />{' '}
+                  <span className="dropdown-title">tristanC</span>
+              </span>
+              }
+              >
+          <MenuItem eventKey="1">User Preferences</MenuItem>
+          <MenuItem eventKey="2" onClick={this.onLogout()}>Logout</MenuItem>
+        </Masthead.Dropdown>
+      );
+    } else {
+      loginNav = (
+        <NavItem
+          id="login"
+          title="login"
+          onClick={this.onLogin}><p>Login</p></NavItem>
+      );
+    }
+
+
     return (
       <React.Fragment>
         <VerticalNav persistentSecondary={false}>
@@ -129,18 +166,7 @@ class App extends React.Component {
                 <MenuItem eventKey="1">Help</MenuItem>
                 <MenuItem eventKey="2">About</MenuItem>
               </Masthead.Dropdown>
-              <Masthead.Dropdown
-                id="user"
-                title={
-                    <span>
-                        <Icon type="pf" name="user" />{' '}
-                          <span className="dropdown-title">tristanC</span>
-                      </span>
-                    }
-                    >
-                <MenuItem eventKey="1">User Preferences</MenuItem>
-                <MenuItem eventKey="2">Logout</MenuItem>
-              </Masthead.Dropdown>
+              {loginNav}
             </VerticalNavIconBar>
           </VerticalNav.Masthead>
           {vertNavItems}
@@ -149,6 +175,46 @@ class App extends React.Component {
       </React.Fragment>
     );
   }
+
+  render() {
+    const { about } = this.props;
+
+    let content;
+
+    if (this.state.loginPage) {
+      content = (<LoginApp app={this} />);
+    } else if (about.services) {
+      content = this.renderMain();
+    } else {
+      content = (
+        <React.Fragment>
+          <VerticalNav persistentSecondary={false}>
+            <VerticalNav.Masthead iconImg={logo}>
+            </VerticalNav.Masthead>
+          </VerticalNav>
+
+          <Grid fluid className="container-pf-nav-pf-vertical">
+            <Grid.Row>
+              <Grid.Col xs={12}>
+                  <h1>Loading...</h1>
+              </Grid.Col>
+            </Grid.Row>
+          </Grid>
+        </React.Fragment>
+      );
+    }
+    return content;
+  }
+  handleNavClick = (event: Event) => {
+    event.preventDefault();
+    const target = (event.currentTarget: any);
+    const { history } = this.props;
+    if (target.getAttribute) {
+      const href = target.getAttribute('href');
+      console.log("Pushing " + href);
+      history.push(href);
+    }
+  };
 }
 
 App.propTypes = {

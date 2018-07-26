@@ -1,1 +1,1 @@
-{"services": ["Gerrit", "LogClassify"], "name": "managesf"}
+{"services": ["Gerrit", "LogClassify"], "auth": ["Local", "Github", "Fedora"]}
