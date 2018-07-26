@@ -17,7 +17,8 @@ const routes = () => [
     iconClass: 'fa pficon-in-progress',
     title: 'Review',
     to: '/review',
-    component: Review
+    component: Review,
+    serviceName: 'Gerrit'
   },
   {
     title: 'Review',
@@ -59,7 +60,8 @@ const routes = () => [
     iconClass: 'fa pficon-zone',
     title: 'Log Classify',
     to: '/log-classify',
-    component: LogClassify
+    component: LogClassify,
+    serviceName: 'LogClassify'
   },
   {
     title: 'Log Classify',

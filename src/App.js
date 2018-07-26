@@ -15,6 +15,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { withRouter } from 'react-router';
+import { connect } from 'react-redux';
 import { Route, Redirect, Switch } from 'react-router-dom';
 import {
   VerticalNav,
@@ -33,6 +34,9 @@ class App extends React.Component {
     super();
 
     this.menu = routes();
+    this.state = {
+      about: null
+    }
   }
   handleNavClick = (event: Event) => {
     event.preventDefault();
@@ -80,12 +84,17 @@ class App extends React.Component {
   };
 
   render() {
-    const { location } = this.props;
+    const { location, about } = this.props;
     const activeItem = this.menu.find(
       item => location.pathname === item.to
     );
+    if (!about.services) {
+      about.services = [];
+    }
     const vertNavItems = this.menu
-            .filter(item => item.iconClass)
+          .filter(item => item.iconClass && (
+            !item.serviceName ||
+              about.services.indexOf(item.serviceName) !== -1))
             .map(item => (
       <VerticalNavItem
         key={item.to}
@@ -147,4 +156,15 @@ App.propTypes = {
   location: PropTypes.object.isRequired
 };
 
-export default withRouter(App);
+const mapStateToProps = (state, ownProps) => {
+  return {
+    about: state.about
+  }
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+  }
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(withRouter(App));

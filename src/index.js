@@ -15,15 +15,24 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { createStore } from 'redux';
+import { createStore, applyMiddleware } from 'redux';
+import thunk from 'redux-thunk';
 import { Provider } from 'react-redux';
 import registerServiceWorker from './registerServiceWorker';
 import 'patternfly/dist/css/patternfly.min.css';
 import 'patternfly/dist/css/patternfly-additions.min.css';
+
 import './App.css';
 import App from './App';
+import rootReducer from './reducers/index';
+import * as aboutActions from './actions/aboutActions';
 
-const store = createStore((state = []) => state);
+// Note: this API requires redux@>=3.1.0
+const store = createStore(
+  rootReducer,
+  applyMiddleware(thunk)
+);
+store.dispatch(aboutActions.fetchAbout());
 
 ReactDOM.render(
   <Provider store={store}>
