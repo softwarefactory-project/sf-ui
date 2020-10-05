@@ -3,7 +3,7 @@ type state =
   | Loading
   | Loaded(SF.Resources.top);
 
-let use = () => {
+let use = fetch => {
   let (state, setState) = React.useState(() => Loading);
   let updateState = resources => {
     setState(_ => Loaded(resources));
@@ -14,8 +14,8 @@ let use = () => {
     | Loading =>
       Js.log("Fetching resources...");
       Js.Promise.(
-        Fetch.fetch("/api/resources.json")
-        |> then_(Fetch.Response.json)
+        fetch("/api/resources.json")
+        // |> then_(Fetch.Response.json)
         |> then_(json => json |> SF.Resources.parse |> updateState |> resolve)
         |> ignore
       );
