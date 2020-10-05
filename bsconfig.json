@@ -3,19 +3,32 @@
   "reason": {
     "react-jsx": 3
   },
-  "sources": {
-    "dir" : "src",
-    "subdirs" : true
-  },
-  "bsc-flags": ["-bs-super-errors", "-bs-no-version-header"],
-  "package-specs": [{
-    "module": "commonjs",
-    "in-source": true
-  }],
+  "sources": [
+    "src",
+    {
+      "dir": "tests",
+      "type": "dev"
+    }
+  ],
+  "bsc-flags": [
+    "-bs-super-errors",
+    "-bs-no-version-header"
+  ],
+  "package-specs": [
+    {
+      "module": "commonjs",
+      "in-source": true
+    }
+  ],
   "suffix": ".bs.js",
-  "namespace": true,
   "bs-dependencies": [
     "reason-react",
+    "bs-fetch",
+    "@softwarefactory-project/re-patternfly",
+    "@softwarefactory-project/re-sf"
+  ],
+  "bs-dev-dependencies": [
+    "@glennsl/bs-jest"
   ],
   "namespace": true,
   "refmt": 3

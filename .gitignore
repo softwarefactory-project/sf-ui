@@ -1,13 +1,9 @@
-# bs-platform
-/node_modules
+/.merlin
 /lib/bs/
-.merlin
-.bsb.lock
-
-# JS files are generated
-/src/*.js
-/src/*/*.js
-
-# Parcel
-/.cache/
+/lib/ocaml/
+/**/*.bs.js
+/.cache
 /dist/
+/.bsb.lock
+/package-lock.json
+/yarn.lock

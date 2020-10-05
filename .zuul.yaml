@@ -1,0 +1,8 @@
+- project:
+    check: &jobs
+      jobs:
+        - shake-factory-npm-test:
+            required-projects:
+              - software-factory/re-sf
+              - software-factory/re-patternfly
+    gate: *jobs
