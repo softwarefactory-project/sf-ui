@@ -13,10 +13,10 @@ module TenantList = {
   };
 };
 
-module Main = {
+module Main = (Fetcher: Dependencies.Fetcher) => {
   [@react.component]
   let make = () => {
-    let resource = Resources.use();
+    let resource = Resources.use(Fetcher.fetch);
     <div>
       <h1> {"Welcome to software-factory!" |> React.string} </h1>
       {switch (resource) {

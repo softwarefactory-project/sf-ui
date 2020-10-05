@@ -30,6 +30,6 @@
   "bs-dev-dependencies": [
     "@glennsl/bs-jest"
   ],
-  "namespace": true,
+  "namespace": "SfUi",
   "refmt": 3
 }
