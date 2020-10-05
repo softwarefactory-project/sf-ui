@@ -1,0 +1,13 @@
+{
+  "resources": {
+    "tenants": {
+      "rdoproject.org": {
+        "default-connection": "rdoproject.org",
+        "description": "The rdoproject.org tenant",
+        "url": "https://review.rdoproject.org/manage",
+        "name": "rdoproject.org"
+      }
+    },
+      "resources": {}
+  }
+}
