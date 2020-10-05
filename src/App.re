@@ -13,15 +13,16 @@ module TenantList = {
   };
 };
 
-module Main = {
+module Main = (Fetcher: Dependencies.Fetcher) => {
+  module Res = Resources.Hook(Fetcher);
   [@react.component]
   let make = () => {
-    let resource = Resources.use();
+    let resource = Res.use();
     <div>
       <h1> {"Welcome to software-factory!" |> React.string} </h1>
       {switch (resource) {
-       | Resources.Loading => <p> {"Loading..." |> React.string} </p>
-       | Resources.Loaded(resources) =>
+       | Res.Loading => <p> {"Loading..." |> React.string} </p>
+       | Res.Loaded(resources) =>
          <TenantList tenants={resources.resources.tenants} />
        }}
     </div>;
