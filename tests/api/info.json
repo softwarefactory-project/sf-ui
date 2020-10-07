@@ -1,0 +1,13 @@
+{
+  "services": [
+    {
+      "name": "gerrit",
+      "path": "/r"
+    },
+    {
+      "name": "etherpad",
+      "path": "/etherpad"
+    }
+  ],
+  "version": "3.6"
+}

@@ -1,14 +1,22 @@
 open Jest;
 open Expect;
 open ReactTestUtils;
-open SFUI;
 
 let stubResources = Node.Fs.readFileSync("tests/api/resources.json", `utf8);
+let stubInfo = Node.Fs.readFileSync("tests/api/info.json", `utf8);
 
 module StubFetch = {
   let fetch = url => {
     Js.log("Stubing: " ++ url);
-    Js.Promise.resolve(Js.Json.parseExn(stubResources));
+    (
+      switch (url) {
+      | "/api/info.json" => stubInfo
+      | "/api/resources.json" => stubResources
+      | _OtherUrl => "false"
+      }
+    )
+    |> Js.Json.parseExn
+    |> Js.Promise.resolve;
   };
 };
 
