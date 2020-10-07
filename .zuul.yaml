@@ -5,4 +5,8 @@
             required-projects:
               - software-factory/re-sf
               - software-factory/re-patternfly
+        - shake-factory-npm-rpmbuild:
+            required-projects:
+              - software-factory/re-sf
+              - software-factory/re-patternfly
     gate: *jobs
