@@ -45,7 +45,7 @@ describe("Basic test", () => {
     testComponentHook(container, <StubApp />, container => {
       finish(
         expect(
-          container->DOM.findBySelectorAndTextContent("li", "rdoproject.org")
+          container->DOM.findBySelectorAndTextContent("div", "rdoproject.org")
           |> Belt.Option.isSome,
         )
         |> toBe(true),

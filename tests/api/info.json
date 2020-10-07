@@ -7,6 +7,22 @@
     {
       "name": "etherpad",
       "path": "/etherpad"
+    },
+    {
+      "name": "cgit",
+      "path": "/cgit"
+    },
+    {
+      "name": "mumble",
+      "path": "/mumble"
+    },
+    {
+      "name": "kibana",
+      "path": "/app/analytics"
+    },
+    {
+      "name": "paste",
+      "path": "/lodgeit"
     }
   ],
   "version": "3.6"
