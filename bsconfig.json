@@ -25,7 +25,8 @@
     "reason-react",
     "bs-fetch",
     "@softwarefactory-project/re-patternfly",
-    "@softwarefactory-project/re-sf"
+    "@softwarefactory-project/re-sf",
+    "@glennsl/bs-json"
   ],
   "bs-dev-dependencies": [
     "@glennsl/bs-jest"
