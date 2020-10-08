@@ -1,22 +1,36 @@
 # sf-ui
 
-Prepare with:
+## Setup
+
+Install yarnpkg and nodejs: `sudo dnf install -y nodejs yarnpkg`
+
+Then setup the project:
 
 ```
-sudo npm install -g parcel-bundler
-npm install
+for dep in re-sf re-patternfly; do
+  git clone https://softwarefactory-project.io/r/software-factory/${depo} ../${dep}
+done
+podman run --rm quay.io/software-factory/nodejs-builder cat /usr/libexec/shake/yarn.lock > yarn.lock
+yarn install
+yarn start
 ```
 
-Run with:
+Run test with:
 
 ```
-npm start & npm run serve
+yarn test
+```
+
+Setup live hot-reload:
+
+```
+yarn serve
 # Open browser on http://localhost:1234
 ```
 
 Distribute with:
 
 ```
-npm run dist
+yarn dist
 # Open browser in dist/
 ```
