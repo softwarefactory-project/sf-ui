@@ -6,6 +6,12 @@
         "description": "The rdoproject.org tenant",
         "url": "https://review.rdoproject.org/manage",
         "name": "rdoproject.org"
+      },
+      "local": {
+        "default-connection": "gerrit",
+        "description": "The local tenant",
+        "url": "https://softwarefactory-project.io/manage",
+        "name": "local"
       }
     },
     "resources": {},

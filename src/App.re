@@ -1,22 +1,50 @@
 open Patternfly;
 
+module ProjectCard = {
+  // Display basic information
+  // The idea is to let the user click to get a new Component displayed
+  // that will contain the full listing of repo + useful links ...
+  [@react.component]
+  let make = (~project: SF.Project.project) => {
+    <Card key={project.name}>
+      <CardTitle> {project.name |> React.string} </CardTitle>
+      <CardBody> {"body" |> React.string} </CardBody>
+    </Card>;
+  };
+};
+
+module TenantCard = {
+  [@react.component]
+  let make = (~tenant: SF.Tenant.tenant) => {
+    <Card key={tenant.name}>
+      <CardTitle>
+        <span> {tenant.name |> React.string} </span>
+        <span> {" - " |> React.string} </span>
+        <span>
+          {Belt.Option.getWithDefault(
+             tenant.description,
+             "The " ++ tenant.name ++ " tenant",
+           )
+           |> React.string}
+        </span>
+      </CardTitle>
+      // Write a fonction to discover tenant's projects
+      // Display one ProjectCard by project
+      <CardBody> {"List the tenant's projects" |> React.string} </CardBody>
+    </Card>;
+  };
+};
+
 module TenantList = {
   [@react.component]
   let make = (~tenants: list(SF.Tenant.tenant)) => {
-    <>
-      <h2> {"Tenant list" |> React.string} </h2>
-      <List>
-        {Belt.List.map(tenants, tenant =>
-           <Card key={tenant.name}>
-             <CardTitle> {tenant.name |> React.string} </CardTitle>
-             <CardBody> {"body" |> React.string} </CardBody>
-             <CardFooter> {"footer" |> React.string} </CardFooter>
-           </Card>
-         )
-         |> Belt.List.toArray
-         |> React.array}
-      </List>
-    </>;
+    let items =
+      Belt.List.map(tenants, tenant => {
+        <GridItem key={tenant.name}> <TenantCard tenant /> </GridItem>
+      })
+      |> Belt.List.toArray
+      |> React.array;
+    <Grid hasGutter=true> items </Grid>;
   };
 };
 
@@ -41,20 +69,33 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
       </Nav>;
     };
   };
+
   module MainWithContext = {
     [@react.component]
     let make = (~info: Info.info, ~resource: Res.state) => {
-      <>
-        <PageHeader logo="logo" topNav={<Menu services={info.services} />} />
-        <h1>
-          {React.string("Welcome to software-factory " ++ info.version ++ "!")}
-        </h1>
-        {switch (resource) {
-         | Res.Loading => <p> {"Loading resources..." |> React.string} </p>
-         | Res.Loaded(resources) =>
-           <TenantList tenants={resources.resources.tenants} />
-         }}
-      </>;
+      let header =
+        <PageHeader logo="logo" topNav={<Menu services={info.services} />} />;
+      <Page header>
+        <PageSection isFilled=true>
+          <Grid hasGutter=true>
+            <Bullseye>
+              <h1>
+                {React.string(
+                   "Welcome to software-factory " ++ info.version ++ "!",
+                 )}
+              </h1>
+            </Bullseye>
+            <GridItem offset=Column._1 span=Column._10>
+              {switch (resource) {
+               | Res.Loading =>
+                 <p> {"Loading resources..." |> React.string} </p>
+               | Res.Loaded(resources) =>
+                 <TenantList tenants={resources.resources.tenants} />
+               }}
+            </GridItem>
+          </Grid>
+        </PageSection>
+      </Page>;
     };
   };
 
@@ -62,11 +103,9 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
   let make = () => {
     let info = Inf.use();
     let resource = Res.use();
-    <Page>
-      {switch (info) {
-       | Inf.Loading => <p> {"Loading..." |> React.string} </p>
-       | Inf.Loaded(info) => <MainWithContext info resource />
-       }}
-    </Page>;
+    switch (info) {
+    | Inf.Loading => <p> {"Loading..." |> React.string} </p>
+    | Inf.Loaded(info) => <MainWithContext info resource />
+    };
   };
 };
