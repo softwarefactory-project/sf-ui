@@ -15,7 +15,41 @@
       }
     },
     "resources": {},
-    "projects": {},
+    "projects": {
+      "DLRN": {
+        "contacts": [
+          "jpena@redhat.com"
+        ],
+        "description": "DLRN builds and maintains yum repositories following OpenStack uptream commit streams",
+        "issue-tracker-url": "https://tree.taiga.io/project/morucci-software-factory",
+        "name": "DLRN",
+        "review-dashboard": "default",
+        "tenant": "local",
+        "website": "http://github.com/softwarefactory-project/DLRN",
+        "source-repositories": [
+          {
+            "DLRN": {}
+          },
+          {
+            "dlrnapi_client": {}
+          },
+          {
+            "rdo-infra/puppet-dlrn": {
+              "connection": "rdoproject.org",
+              "zuul/include": [
+                "job"
+              ]
+            }
+          },
+          {
+            "rdo-infra/ansible-role-dlrn": {
+              "connection": "rdoproject.org",
+              "zuul/include": []
+            }
+          }
+        ]
+      }
+    },
     "connections": {}
   }
 }
