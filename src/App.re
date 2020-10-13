@@ -1,5 +1,8 @@
 open Patternfly;
 
+let renderList = (xs, f) =>
+  xs->Belt.List.map(f)->Belt.List.toArray->React.array;
+
 // Need to create the PF bindind for colors palette
 // https://www.patternfly.org/v4/guidelines/colors
 let pf_global__palette__light_blue_400 = "#008BAD";
@@ -29,14 +32,12 @@ module ProjectCard = {
     | Some(contacts) =>
       <ListItem key=label>
         <b> {label ++ ": " |> React.string} </b>
-        {Belt.List.map(contacts, contact =>
+        {contacts->renderList(contact =>
            <span key=contact>
              <a href={"mailto:" ++ contact}> {contact |> React.string} </a>
              {" " |> React.string}
            </span>
-         )
-         |> Belt.List.toArray
-         |> React.array}
+         )}
       </ListItem>
     };
   };
@@ -54,15 +55,11 @@ module ProjectCard = {
       </CardTitle>
       <CardBody>
         <List>
-          {Belt.List.map(
-             [
-               (project.website, "Website", true),
-               (project.issue_tracker_url, "Issue-tracker", true),
-             ],
-             getItem,
-           )
-           |> Belt.List.toArray
-           |> React.array}
+          {[
+             (project.website, "Website", true),
+             (project.issue_tracker_url, "Issue-tracker", true),
+           ]
+           ->renderList(getItem)}
           {isSmall
              ? ReasonReact.null
              : {
@@ -104,11 +101,9 @@ module TenantCard = {
       </CardTitle>
       <CardBody>
         <Bullseye> "This tenant owns the following projects" </Bullseye>
-        {Belt.List.map(tenant_projects, project =>
+        {tenant_projects->renderList(project =>
            <ProjectCard key={project.name} project isSmall=true />
-         )
-         |> Belt.List.toArray
-         |> React.array}
+         )}
       </CardBody>
     </Card>;
   };
@@ -122,7 +117,7 @@ module TenantList = {
         ~projects: list(SF.Project.project),
       ) => {
     let items =
-      Belt.List.map(tenants, tenant => {
+      tenants->renderList(tenant => {
         <GridItem key={tenant.name}>
           <TenantCard
             tenant
@@ -131,9 +126,7 @@ module TenantList = {
             }
           />
         </GridItem>
-      })
-      |> Belt.List.toArray
-      |> React.array;
+      });
     <Grid hasGutter=true> items </Grid>;
   };
 };
@@ -176,14 +169,12 @@ module Menu = {
   let make = (~services: list(SF.Info.service)) => {
     <Nav variant=`Horizontal>
       <NavList>
-        {Belt.List.map(services, service =>
+        {services->renderList(service =>
            <NavItem
              key={service.name} isActive=false onClick={ev => Js.log(ev)}>
              {service.name |> React.string}
            </NavItem>
-         )
-         |> Belt.List.toArray
-         |> React.array}
+         )}
       </NavList>
     </Nav>;
   };
