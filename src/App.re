@@ -1,7 +1,12 @@
 open Patternfly;
 
-let renderList = (xs, f) =>
-  xs->Belt.List.map(f)->Belt.List.toArray->React.array;
+let renderIf = (pred: bool, elem: React.element) => pred ? elem : React.null;
+
+let renderIfNot = pred => renderIf(!pred);
+
+let listToReactArray = xs => xs->Belt.List.toArray->React.array;
+
+let renderList = (xs, f) => xs->Belt.List.map(f)->listToReactArray;
 
 // Need to create the PF bindind for colors palette
 // https://www.patternfly.org/v4/guidelines/colors
@@ -60,18 +65,16 @@ module ProjectCard = {
              (project.issue_tracker_url, "Issue-tracker", true),
            ]
            ->renderList(getItem)}
-          {isSmall
-             ? ReasonReact.null
-             : {
-               [
-                 (project.tenant, "Tenant", false)->getItem,
-                 (project.documentation, "Documentation", true)->getItem,
-                 getContactsItem(project.contacts, "Contacts"),
-                 getContactsItem(project.mailing_lists, "Mailing-lists"),
-               ]
-               |> Belt.List.toArray
-               |> React.array;
-             }}
+          {renderIfNot(
+             isSmall,
+             [
+               (project.tenant, "Tenant", false)->getItem,
+               (project.documentation, "Documentation", true)->getItem,
+               getContactsItem(project.contacts, "Contacts"),
+               getContactsItem(project.mailing_lists, "Mailing-lists"),
+             ]
+             ->listToReactArray,
+           )}
         </List>
       </CardBody>
     </Card>;
