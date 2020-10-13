@@ -144,7 +144,7 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
 
   module MainPage = {
     [@react.component]
-    let make = (~info: SF.Info.info, ~resource: Res.state) => {
+    let make = (~info: SF.Info.info, ~resources: SF.Resources.top) => {
       <Grid hasGutter=true>
         <Bullseye>
           <h1>
@@ -154,14 +154,10 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
           </h1>
         </Bullseye>
         <GridItem offset=Column._1 span=Column._10>
-          {switch (resource) {
-           | Res.Loading => <p> {"Loading resources..." |> React.string} </p>
-           | Res.Loaded(resources) =>
-             <TenantList
-               tenants={resources.resources.tenants}
-               projects={resources.resources.projects}
-             />
-           }}
+          <TenantList
+            tenants={resources.resources.tenants}
+            projects={resources.resources.projects}
+          />
         </GridItem>
       </Grid>;
     };
@@ -169,19 +165,15 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
 
   module ProjectPage = {
     [@react.component]
-    let make = (~project_id: string, ~resource: Res.state) => {
-      switch (resource) {
-      | Res.Loading => <p> {"Loading resources..." |> React.string} </p>
-      | Res.Loaded(resources) =>
-        let maybeProject =
-          Belt.List.keep(resources.resources.projects, project =>
-            project.name == project_id
-          );
-        switch (maybeProject) {
-        | [] =>
-          <p> {"Project " ++ project_id ++ " not found" |> React.string} </p>
-        | [project, ..._] => <ProjectCard project />
-        };
+    let make = (~project_id: string, ~resources: SF.Resources.top) => {
+      let maybeProject =
+        Belt.List.keep(resources.resources.projects, project =>
+          project.name == project_id
+        );
+      switch (maybeProject) {
+      | [] =>
+        <p> {"Project " ++ project_id ++ " not found" |> React.string} </p>
+      | [project, ..._] => <ProjectCard project />
       };
     };
   };
@@ -206,18 +198,24 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
 
   module MainWithContext = {
     [@react.component]
-    let make = (~info: SF.Info.info, ~resource: Res.state) => {
+    let make = (~info: SF.Info.info) => {
+      let resource = Res.use();
       let url = ReasonReactRouter.useUrl();
       let header =
         <PageHeader logo="logo" topNav={<Menu services={info.services} />} />;
       <Page header>
-        <PageSection isFilled=true>
-          {switch (url.path) {
-           | [] => <MainPage info resource />
-           | ["project", project_id] => <ProjectPage project_id resource />
-           | _ => <p> {"Not found" |> React.string} </p>
-           }}
-        </PageSection>
+        {switch (resource) {
+         | Res.Loading => <p> {"Loading resources..." |> React.string} </p>
+         | Res.Loaded(resources) =>
+           <PageSection isFilled=true>
+             {switch (url.path) {
+              | [] => <MainPage info resources />
+              | ["project", project_id] =>
+                <ProjectPage project_id resources />
+              | _ => <p> {"Not found" |> React.string} </p>
+              }}
+           </PageSection>
+         }}
       </Page>;
     };
   };
@@ -225,10 +223,9 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
   [@react.component]
   let make = () => {
     let info = Inf.use();
-    let resource = Res.use();
     switch (info) {
     | Inf.Loading => <p> {"Loading..." |> React.string} </p>
-    | Inf.Loaded(info) => <MainWithContext info resource />
+    | Inf.Loaded(info) => <MainWithContext info />
     };
   };
 };
