@@ -12,14 +12,14 @@ module ProjectCard = {
       (project_id: string, isClickable: bool, _: ReactEvent.Mouse.t) => {
     isClickable ? ReasonReactRouter.push("project/" ++ project_id) : ();
   };
-  let getLinkItem = ((item, label: string)) => {
+  let getItem = ((item, label: string, link: bool)) => {
     switch (item) {
     | None => ReasonReact.null
     | _ =>
-      let url = Belt.Option.getWithDefault(item, "");
+      let str = Belt.Option.getWithDefault(item, "");
       <ListItem key=label>
         <b> {label ++ ": " |> React.string} </b>
-        <a href=url> {url |> React.string} </a>
+        {link ? <a href=str> {str |> React.string} </a> : str |> React.string}
       </ListItem>;
     };
   };
@@ -27,10 +27,10 @@ module ProjectCard = {
     switch (contacts) {
     | None => ReasonReact.null
     | Some(contacts) =>
-      <ListItem>
+      <ListItem key=label>
         <b> {label ++ ": " |> React.string} </b>
         {Belt.List.map(contacts, contact =>
-           <span>
+           <span key=contact>
              <a href={"mailto:" ++ contact}> {contact |> React.string} </a>
              {" " |> React.string}
            </span>
@@ -56,10 +56,10 @@ module ProjectCard = {
         <List>
           {Belt.List.map(
              [
-               (project.website, "Website"),
-               (project.issue_tracker_url, "Issue-tracker"),
+               (project.website, "Website", true),
+               (project.issue_tracker_url, "Issue-tracker", true),
              ],
-             getLinkItem,
+             getItem,
            )
            |> Belt.List.toArray
            |> React.array}
@@ -67,9 +67,10 @@ module ProjectCard = {
              ? ReasonReact.null
              : {
                [
-                 (project.documentation, "Documentation")->getLinkItem,
+                 (project.tenant, "Tenant", false)->getItem,
+                 (project.documentation, "Documentation", true)->getItem,
                  getContactsItem(project.contacts, "Contacts"),
-                 getContactsItem(project.mailing_lists, "Mailing-lists")
+                 getContactsItem(project.mailing_lists, "Mailing-lists"),
                ]
                |> Belt.List.toArray
                |> React.array;
