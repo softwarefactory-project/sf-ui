@@ -1,5 +1,11 @@
 open Patternfly;
 
+let renderIfSome = (x: option('t), f: 't => React.element) =>
+  switch (x) {
+  | None => React.null
+  | Some(x') => f(x')
+  };
+
 let renderIf = (pred: bool, elem: React.element) => pred ? elem : React.null;
 
 let renderIfNot = pred => renderIf(!pred);
@@ -20,21 +26,17 @@ module ProjectCard = {
       (project_id: string, isClickable: bool, _: ReactEvent.Mouse.t) => {
     isClickable ? ReasonReactRouter.push("project/" ++ project_id) : ();
   };
-  let getItem = ((item, label: string, link: bool)) => {
-    switch (item) {
-    | None => ReasonReact.null
-    | _ =>
-      let str = Belt.Option.getWithDefault(item, "");
+  let getItem = ((item, label: string, link: bool)) =>
+    renderIfSome(item, item =>
       <ListItem key=label>
         <b> {label ++ ": " |> React.string} </b>
-        {link ? <a href=str> {str |> React.string} </a> : str |> React.string}
-      </ListItem>;
-    };
-  };
-  let getContactsItem = (contacts, label: string) => {
-    switch (contacts) {
-    | None => ReasonReact.null
-    | Some(contacts) =>
+        {link
+           ? <a href=item> {item |> React.string} </a> : item |> React.string}
+      </ListItem>
+    );
+
+  let getContactsItem = (contacts, label: string) =>
+    renderIfSome(contacts, contacts =>
       <ListItem key=label>
         <b> {label ++ ": " |> React.string} </b>
         {contacts->renderList(contact =>
@@ -44,8 +46,8 @@ module ProjectCard = {
            </span>
          )}
       </ListItem>
-    };
-  };
+    );
+
   [@react.component]
   let make = (~project: SF.Project.project, ~isSmall: bool=false) => {
     <Card
