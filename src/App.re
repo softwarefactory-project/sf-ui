@@ -144,7 +144,7 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
 
   module MainPage = {
     [@react.component]
-    let make = (~info: Info.info, ~resource: Res.state) => {
+    let make = (~info: SF.Info.info, ~resource: Res.state) => {
       <Grid hasGutter=true>
         <Bullseye>
           <h1>
@@ -188,7 +188,7 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
 
   module Menu = {
     [@react.component]
-    let make = (~services: list(Info.service)) => {
+    let make = (~services: list(SF.Info.service)) => {
       <Nav variant=`Horizontal>
         <NavList>
           {Belt.List.map(services, service =>
@@ -206,7 +206,7 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
 
   module MainWithContext = {
     [@react.component]
-    let make = (~info: Info.info, ~resource: Res.state) => {
+    let make = (~info: SF.Info.info, ~resource: Res.state) => {
       let url = ReasonReactRouter.useUrl();
       let header =
         <PageHeader logo="logo" topNav={<Menu services={info.services} />} />;
