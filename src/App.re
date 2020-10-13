@@ -130,6 +130,25 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
     };
   };
 
+  module ProjectPage = {
+    [@react.component]
+    let make = (~project_id: string, ~resource: Res.state) => {
+      switch (resource) {
+      | Res.Loading => <p> {"Loading resources..." |> React.string} </p>
+      | Res.Loaded(resources) =>
+        let maybeProject =
+          Belt.List.keep(resources.resources.projects, project =>
+            project.name == project_id
+          );
+        switch (maybeProject) {
+        | [] =>
+          <p> {"Project " ++ project_id ++ " not found" |> React.string} </p>
+        | [project, ..._] => <ProjectCard project />
+        };
+      };
+    };
+  };
+
   module Menu = {
     [@react.component]
     let make = (~services: list(Info.service)) => {
@@ -158,6 +177,7 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
         <PageSection isFilled=true>
           {switch (url.path) {
            | [] => <MainPage info resource />
+           | ["project", project_id] => <ProjectPage project_id resource />
            | _ => <p> {"Not found" |> React.string} </p>
            }}
         </PageSection>
