@@ -8,9 +8,45 @@ module ProjectCard = {
   // Display basic information
   // The idea is to let the user click to get a new Component displayed
   // that will contain the full listing of repo + useful links ...
+  let handleClick =
+      (project_id: string, isClickable: bool, _: ReactEvent.Mouse.t) => {
+    isClickable ? ReasonReactRouter.push("project/" ++ project_id) : ();
+  };
+  let getLinkItem = ((item, label: string)) => {
+    switch (item) {
+    | None => ReasonReact.null
+    | _ =>
+      let url = Belt.Option.getWithDefault(item, "");
+      <ListItem key=label>
+        <b> {label ++ ": " |> React.string} </b>
+        <a href=url> {url |> React.string} </a>
+      </ListItem>;
+    };
+  };
+  let getContactsItem = (contacts, label: string) => {
+    switch (contacts) {
+    | None => ReasonReact.null
+    | Some(contacts) =>
+      <ListItem>
+        <b> {label ++ ": " |> React.string} </b>
+        {Belt.List.map(contacts, contact =>
+           <span>
+             <a href={"mailto:" ++ contact}> {contact |> React.string} </a>
+             {" " |> React.string}
+           </span>
+         )
+         |> Belt.List.toArray
+         |> React.array}
+      </ListItem>
+    };
+  };
   [@react.component]
-  let make = (~project: SF.Project.project) => {
-    <Card key={project.name} isCompact=true>
+  let make = (~project: SF.Project.project, ~isSmall: bool=false) => {
+    <Card
+      key={project.name}
+      isCompact=true
+      isSelectable=isSmall
+      onClick={handleClick(project.name, isSmall)}>
       <CardTitle>
         <span> {project.name |> React.string} </span>
         <span> {" - " |> React.string} </span>
@@ -18,26 +54,26 @@ module ProjectCard = {
       </CardTitle>
       <CardBody>
         <List>
-          {let linksToDisplay = [
-             (project.website, "Website"),
-             (project.documentation, "Documentation"),
-             (project.issue_tracker_url, "Issue-tracker"),
-           ];
-
-           let getLinkItem = ((item, label: string)) =>
-             {switch (item) {
-              | None => <p key=label />
-              | _ =>
-                let url = Belt.Option.getWithDefault(item, "");
-                <ListItem key=label>
-                  <b> {label ++ ": " |> React.string} </b>
-                  <a href=url> {url |> React.string} </a>
-                </ListItem>;
-              }};
-
-           Belt.List.map(linksToDisplay, getLinkItem)
+          {Belt.List.map(
+             [
+               (project.website, "Website"),
+               (project.issue_tracker_url, "Issue-tracker"),
+             ],
+             getLinkItem,
+           )
            |> Belt.List.toArray
            |> React.array}
+          {isSmall
+             ? ReasonReact.null
+             : {
+               [
+                 (project.documentation, "Documentation")->getLinkItem,
+                 getContactsItem(project.contacts, "Contacts"),
+                 getContactsItem(project.mailing_lists, "Mailing-lists")
+               ]
+               |> Belt.List.toArray
+               |> React.array;
+             }}
         </List>
       </CardBody>
     </Card>;
@@ -68,7 +104,7 @@ module TenantCard = {
       <CardBody>
         <Bullseye> "This tenant owns the following projects" </Bullseye>
         {Belt.List.map(tenant_projects, project =>
-           <ProjectCard key={project.name} project />
+           <ProjectCard key={project.name} project isSmall=true />
          )
          |> Belt.List.toArray
          |> React.array}

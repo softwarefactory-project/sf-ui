@@ -20,6 +20,9 @@
         "contacts": [
           "jpena@redhat.com"
         ],
+        "mailing-lists": [
+          "dlrn@redhat.com"
+        ],
         "description": "DLRN builds and maintains yum repositories following OpenStack uptream commit streams",
         "issue-tracker-url": "https://tree.taiga.io/project/morucci-software-factory",
         "name": "DLRN",
