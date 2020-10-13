@@ -105,6 +105,31 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
   module Res = Resources.Hook(Fetcher);
   module Inf = Info.Hook(Fetcher);
 
+  module MainPage = {
+    [@react.component]
+    let make = (~info: Info.info, ~resource: Res.state) => {
+      <Grid hasGutter=true>
+        <Bullseye>
+          <h1>
+            {React.string(
+               "Welcome to software-factory " ++ info.version ++ "!",
+             )}
+          </h1>
+        </Bullseye>
+        <GridItem offset=Column._1 span=Column._10>
+          {switch (resource) {
+           | Res.Loading => <p> {"Loading resources..." |> React.string} </p>
+           | Res.Loaded(resources) =>
+             <TenantList
+               tenants={resources.resources.tenants}
+               projects={resources.resources.projects}
+             />
+           }}
+        </GridItem>
+      </Grid>;
+    };
+  };
+
   module Menu = {
     [@react.component]
     let make = (~services: list(Info.service)) => {
@@ -126,30 +151,15 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
   module MainWithContext = {
     [@react.component]
     let make = (~info: Info.info, ~resource: Res.state) => {
+      let url = ReasonReactRouter.useUrl();
       let header =
         <PageHeader logo="logo" topNav={<Menu services={info.services} />} />;
       <Page header>
         <PageSection isFilled=true>
-          <Grid hasGutter=true>
-            <Bullseye>
-              <h1>
-                {React.string(
-                   "Welcome to software-factory " ++ info.version ++ "!",
-                 )}
-              </h1>
-            </Bullseye>
-            <GridItem offset=Column._1 span=Column._10>
-              {switch (resource) {
-               | Res.Loading =>
-                 <p> {"Loading resources..." |> React.string} </p>
-               | Res.Loaded(resources) =>
-                 <TenantList
-                   tenants={resources.resources.tenants}
-                   projects={resources.resources.projects}
-                 />
-               }}
-            </GridItem>
-          </Grid>
+          {switch (url.path) {
+           | [] => <MainPage info resource />
+           | _ => <p> {"Not found" |> React.string} </p>
+           }}
         </PageSection>
       </Page>;
     };
