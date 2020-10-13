@@ -138,63 +138,60 @@ module TenantList = {
   };
 };
 
+module MainPage = {
+  [@react.component]
+  let make = (~info: SF.Info.info, ~resources: SF.Resources.top) => {
+    <Grid hasGutter=true>
+      <Bullseye>
+        <h1>
+          {React.string("Welcome to software-factory " ++ info.version ++ "!")}
+        </h1>
+      </Bullseye>
+      <GridItem offset=Column._1 span=Column._10>
+        <TenantList
+          tenants={resources.resources.tenants}
+          projects={resources.resources.projects}
+        />
+      </GridItem>
+    </Grid>;
+  };
+};
+
+module ProjectPage = {
+  [@react.component]
+  let make = (~project_id: string, ~resources: SF.Resources.top) => {
+    let maybeProject =
+      Belt.List.keep(resources.resources.projects, project =>
+        project.name == project_id
+      );
+    switch (maybeProject) {
+    | [] => <p> {"Project " ++ project_id ++ " not found" |> React.string} </p>
+    | [project, ..._] => <ProjectCard project />
+    };
+  };
+};
+
+module Menu = {
+  [@react.component]
+  let make = (~services: list(SF.Info.service)) => {
+    <Nav variant=`Horizontal>
+      <NavList>
+        {Belt.List.map(services, service =>
+           <NavItem
+             key={service.name} isActive=false onClick={ev => Js.log(ev)}>
+             {service.name |> React.string}
+           </NavItem>
+         )
+         |> Belt.List.toArray
+         |> React.array}
+      </NavList>
+    </Nav>;
+  };
+};
+
 module Main = (Fetcher: Dependencies.Fetcher) => {
   module Res = Resources.Hook(Fetcher);
   module Inf = Info.Hook(Fetcher);
-
-  module MainPage = {
-    [@react.component]
-    let make = (~info: SF.Info.info, ~resources: SF.Resources.top) => {
-      <Grid hasGutter=true>
-        <Bullseye>
-          <h1>
-            {React.string(
-               "Welcome to software-factory " ++ info.version ++ "!",
-             )}
-          </h1>
-        </Bullseye>
-        <GridItem offset=Column._1 span=Column._10>
-          <TenantList
-            tenants={resources.resources.tenants}
-            projects={resources.resources.projects}
-          />
-        </GridItem>
-      </Grid>;
-    };
-  };
-
-  module ProjectPage = {
-    [@react.component]
-    let make = (~project_id: string, ~resources: SF.Resources.top) => {
-      let maybeProject =
-        Belt.List.keep(resources.resources.projects, project =>
-          project.name == project_id
-        );
-      switch (maybeProject) {
-      | [] =>
-        <p> {"Project " ++ project_id ++ " not found" |> React.string} </p>
-      | [project, ..._] => <ProjectCard project />
-      };
-    };
-  };
-
-  module Menu = {
-    [@react.component]
-    let make = (~services: list(SF.Info.service)) => {
-      <Nav variant=`Horizontal>
-        <NavList>
-          {Belt.List.map(services, service =>
-             <NavItem
-               key={service.name} isActive=false onClick={ev => Js.log(ev)}>
-               {service.name |> React.string}
-             </NavItem>
-           )
-           |> Belt.List.toArray
-           |> React.array}
-        </NavList>
-      </Nav>;
-    };
-  };
 
   module MainWithContext = {
     [@react.component]
