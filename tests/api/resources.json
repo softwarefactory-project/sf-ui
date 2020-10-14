@@ -53,6 +53,17 @@
         ]
       }
     },
-    "connections": {}
+    "connections": {
+      "gerrit": {
+        "base-url": "https://softwarefactory-project.io/r",
+        "type": "gerrit",
+        "name": "gerrit"
+      },
+      "rdoproject.org": {
+        "base-url": "https://review.rdoproject.org/r",
+        "type": "gerrit",
+        "name": "rdoproject.org"
+      }
+    }
   }
 }
