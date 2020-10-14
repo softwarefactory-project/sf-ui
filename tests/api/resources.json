@@ -14,7 +14,12 @@
         "name": "local"
       }
     },
-    "repos": {},
+    "repos": {
+      "DLRN": {
+        "acl": "test-acl",
+        "description": "DLRN Continuous Delivery platform for OpenStack Packages"
+      }
+    },
     "projects": {
       "DLRN": {
         "contacts": [
@@ -31,10 +36,10 @@
         "website": "http://github.com/softwarefactory-project/DLRN",
         "source-repositories": [
           {
-            "DLRN": {}
+            "DLRN": null
           },
           {
-            "dlrnapi_client": {}
+            "dlrnapi_client": null
           },
           {
             "rdo-infra/puppet-dlrn": {
