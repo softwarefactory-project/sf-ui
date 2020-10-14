@@ -375,7 +375,7 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
         header={
           <PageHeader logo="logo" topNav={<Menu services={info.services} />} />
         }>
-        {switch (Res.use()) {
+        {switch (Res.use("local")) {
          | Res.Loading => <p> {"Loading resources..." |> str} </p>
          | Res.Loaded(resources) => <MainRouter info resources />
          }}
