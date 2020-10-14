@@ -73,11 +73,14 @@ module SRCard = {
       ) => {
     <Card isCompact=true>
       <CardBody>
-        <span> {sr.name |> str} </span>
-        {switch (getConnection(sr, project_connection, connections)) {
-         | None => React.null
-         | Some(connection) => <span> {connection.name |> str} </span>
-         }}
+        <span> <b> {sr.name |> str} </b> </span>
+        {renderIfSome(sr.description, desc =>
+           <span> {": " |> str} {desc |> str} </span>
+         )}
+        {renderIfSome(
+           getConnection(sr, project_connection, connections), connection =>
+           <span> {" (" ++ connection.name ++ ")" |> str} </span>
+         )}
       </CardBody>
     </Card>;
   };
@@ -375,7 +378,7 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
         header={
           <PageHeader logo="logo" topNav={<Menu services={info.services} />} />
         }>
-        {switch (Res.use()) {
+        {switch (Res.use("local")) {
          | Res.Loading => <p> {"Loading resources..." |> str} </p>
          | Res.Loaded(resources) => <MainRouter info resources />
          }}
