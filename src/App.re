@@ -20,6 +20,28 @@ let str = React.string;
 // https://www.patternfly.org/v4/guidelines/colors
 let pf_global__palette__light_blue_400 = "#008BAD";
 
+type attribute_type =
+  | Flat(string)
+  | Link(string)
+  | Contact(list(string))
+  | Empty;
+
+let is_empty = v =>
+  switch (v) {
+  | Empty => true
+  | _ => false
+  };
+
+let maybe_attribute = (attribute, ctr) =>
+  switch (attribute) {
+  | Some(attr) => ctr(attr)
+  | None => Empty
+  };
+
+let maybe_flat = v => maybe_attribute(v, v => Flat(v));
+let maybe_link = v => maybe_attribute(v, v => Link(v));
+let maybe_contacts = v => maybe_attribute(v, v => Contact(v));
+
 module ProjectCard = {
   // Display basic information
   // The idea is to let the user click to get a new Component displayed
@@ -28,26 +50,38 @@ module ProjectCard = {
       (project_id: string, isClickable: bool, _: ReactEvent.Mouse.t) => {
     isClickable ? ReasonReactRouter.push("project/" ++ project_id) : ();
   };
-  let getItem = ((item, label: string, link: bool)) =>
-    renderIfSome(item, item =>
+  let renderAttribute =
+      ((label: string, attribute: attribute_type)): React.element =>
+    renderIfNot(
+      is_empty(attribute),
       <ListItem key=label>
         <b> {label ++ ": " |> str} </b>
-        {link ? <a href=item> {item |> str} </a> : item |> str}
-      </ListItem>
+        {switch (attribute) {
+         | Flat(value) => value |> str
+         | Link(link) => <a href=link> {link |> str} </a>
+         | Contact(links) =>
+           links->renderList(contact =>
+             <span key=contact>
+               <a href={"mailto:" ++ contact}> {contact |> str} </a>
+               {" " |> str}
+             </span>
+           )
+         | Empty => React.null // should not happen
+         }}
+      </ListItem>,
     );
 
-  let getContactsItem = (contacts, label: string) =>
-    renderIfSome(contacts, contacts =>
-      <ListItem key=label>
-        <b> {label ++ ": " |> str} </b>
-        {contacts->renderList(contact =>
-           <span key=contact>
-             <a href={"mailto:" ++ contact}> {contact |> str} </a>
-             {" " |> str}
-           </span>
-         )}
-      </ListItem>
-    );
+  let project_attrs = (project: SF.Project.project) => [
+    ("Website", maybe_link(project.website)),
+    ("Issue-tracker", maybe_link(project.issue_tracker_url)),
+  ];
+
+  let project_full_attrs = (project: SF.Project.project) => [
+    ("Tenant", maybe_flat(project.tenant)),
+    ("Documentation", maybe_link(project.documentation)),
+    ("Contacts", maybe_contacts(project.contacts)),
+    ("Mailing-lists", maybe_contacts(project.mailing_lists)),
+  ];
 
   [@react.component]
   let make = (~project: SF.Project.project, ~isSmall: bool=false) =>
@@ -63,20 +97,10 @@ module ProjectCard = {
       </CardTitle>
       <CardBody>
         <List>
-          {[
-             (project.website, "Website", true),
-             (project.issue_tracker_url, "Issue-tracker", true),
-           ]
-           ->renderList(getItem)}
+          {project_attrs(project)->renderList(renderAttribute)}
           {renderIfNot(
              isSmall,
-             [
-               (project.tenant, "Tenant", false)->getItem,
-               (project.documentation, "Documentation", true)->getItem,
-               getContactsItem(project.contacts, "Contacts"),
-               getContactsItem(project.mailing_lists, "Mailing-lists"),
-             ]
-             ->listToReactArray,
+             project_full_attrs(project)->renderList(renderAttribute),
            )}
         </List>
       </CardBody>

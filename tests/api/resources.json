@@ -14,7 +14,7 @@
         "name": "local"
       }
     },
-    "resources": {},
+    "repos": {},
     "projects": {
       "DLRN": {
         "contacts": [
