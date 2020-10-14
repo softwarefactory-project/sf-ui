@@ -20,6 +20,66 @@ let str = React.string;
 // https://www.patternfly.org/v4/guidelines/colors
 let pf_global__palette__light_blue_400 = "#008BAD";
 
+let boxTitleStyle =
+  ReactDOM.Style.make(
+    ~backgroundColor=pf_global__palette__light_blue_400,
+    (),
+  );
+
+module SRCard = {
+  let getConnection =
+      (
+        sr: SF.Project.sourceRepository,
+        project_connection: option(SF.Connection.connection),
+        connections: list(SF.Connection.connection),
+      )
+      : option(SF.Connection.connection) => {
+    switch (sr.connection) {
+    | Some(connection_id) =>
+      Belt.List.keep(connections, cnx => cnx.name == connection_id)
+      ->Belt.List.get(0)
+    | None => project_connection
+    };
+  };
+
+  [@react.component]
+  let make =
+      (
+        ~sr: SF.Project.sourceRepository,
+        ~project_connection: option(SF.Connection.connection),
+        ~connections: list(SF.Connection.connection),
+      ) => {
+    <Card isCompact=true>
+      <CardBody>
+        <span> {sr.name |> str} </span>
+        {switch (getConnection(sr, project_connection, connections)) {
+         | None => React.null
+         | Some(connection) => <span> {connection.name |> str} </span>
+         }}
+      </CardBody>
+    </Card>;
+  };
+};
+
+module SRsCard = {
+  [@react.component]
+  let make =
+      (
+        ~srs: list(SF.Project.sourceRepository),
+        ~project_connection: option(SF.Connection.connection),
+        ~connections: list(SF.Connection.connection),
+      ) => {
+    <Card>
+      <CardTitle style=boxTitleStyle> "Projects' repositories" </CardTitle>
+      <CardBody>
+        {srs->renderList(sr =>
+           <SRCard key={sr.name} sr project_connection connections />
+         )}
+      </CardBody>
+    </Card>;
+  };
+};
+
 module ProjectCard = {
   // Display basic information
   // The idea is to let the user click to get a new Component displayed
@@ -49,8 +109,71 @@ module ProjectCard = {
       </ListItem>
     );
 
+  let getTenant =
+      (tenant_id: string, tenants: list(SF.Tenant.tenant))
+      : option(SF.Tenant.tenant) => {
+    tenants
+    ->Belt.List.keep(tenant => tenant.name == tenant_id)
+    ->Belt.List.get(0);
+  };
+
+  let getTenantConnection =
+      (tenant: SF.Tenant.tenant, connections: list(SF.Connection.connection))
+      : option(SF.Connection.connection) => {
+    switch (tenant.default_connection) {
+    | None => None
+    | Some(connection_id) =>
+      Belt.List.keep(connections, connection =>
+        connection.name == connection_id
+      )
+      ->Belt.List.get(0)
+    };
+  };
+
+  let getConnectionFromTenantById =
+      (
+        tenant_id: string,
+        tenants: list(SF.Tenant.tenant),
+        connections: list(SF.Connection.connection),
+      )
+      : option(SF.Connection.connection) => {
+    let maybeTenant = getTenant(tenant_id, tenants);
+    switch (maybeTenant) {
+    | None => None
+    | Some(tenant) => getTenantConnection(tenant, connections)
+    };
+  };
+
+  let getConnection =
+      (
+        project: SF.Project.project,
+        tenants: list(SF.Tenant.tenant),
+        connections: list(SF.Connection.connection),
+      )
+      : option(SF.Connection.connection) => {
+    switch (project.connection) {
+    | None =>
+      switch (project.tenant) {
+      | None => getConnectionFromTenantById("local", tenants, connections)
+      | Some(tenant_id) =>
+        getConnectionFromTenantById(tenant_id, tenants, connections)
+      }
+    | Some(connection_id) =>
+      Belt.List.keep(connections, connection =>
+        connection_id == connection.name
+      )
+      ->Belt.List.get(0)
+    };
+  };
+
   [@react.component]
-  let make = (~project: SF.Project.project, ~isSmall: bool=false) =>
+  let make =
+      (
+        ~project: SF.Project.project,
+        ~tenants: list(SF.Tenant.tenant),
+        ~connections: list(SF.Connection.connection),
+        ~isSmall: bool=false,
+      ) =>
     <Card
       key={project.name}
       isCompact=true
@@ -79,6 +202,14 @@ module ProjectCard = {
              ->listToReactArray,
            )}
         </List>
+        <br />
+        {let project_connection =
+           getConnection(project, tenants, connections);
+         <SRsCard
+           srs={project.source_repositories}
+           project_connection
+           connections
+         />}
       </CardBody>
     </Card>;
 };
@@ -86,14 +217,13 @@ module ProjectCard = {
 module TenantCard = {
   [@react.component]
   let make =
-      (~tenant: SF.Tenant.tenant, ~tenant_projects: list(SF.Project.project)) => {
-    let titleStyle =
-      ReactDOM.Style.make(
-        ~backgroundColor=pf_global__palette__light_blue_400,
-        (),
-      );
+      (
+        ~tenant: SF.Tenant.tenant,
+        ~tenant_projects: list(SF.Project.project),
+        ~connections: list(SF.Connection.connection),
+      ) => {
     <Card key={tenant.name}>
-      <CardTitle style=titleStyle>
+      <CardTitle style=boxTitleStyle>
         <span> {tenant.name |> str} </span>
         <span> {" - " |> str} </span>
         <span>
@@ -107,7 +237,13 @@ module TenantCard = {
       <CardBody>
         <Bullseye> "This tenant owns the following projects" </Bullseye>
         {tenant_projects->renderList(project =>
-           <ProjectCard key={project.name} project isSmall=true />
+           <ProjectCard
+             key={project.name}
+             project
+             tenants=[tenant]
+             connections
+             isSmall=true
+           />
          )}
       </CardBody>
     </Card>;
@@ -120,12 +256,14 @@ module TenantList = {
       (
         ~tenants: list(SF.Tenant.tenant),
         ~projects: list(SF.Project.project),
+        ~connections: list(SF.Connection.connection),
       ) =>
     <Grid hasGutter=true>
       {tenants->renderList(tenant => {
          <GridItem key={tenant.name}>
            <TenantCard
              tenant
+             connections
              tenant_projects={
                projects |> SF.Project.filterProjectsByTenant(tenant.name)
              }
@@ -148,6 +286,7 @@ module WelcomePage = {
         <TenantList
           tenants={resources.resources.tenants}
           projects={resources.resources.projects}
+          connections={resources.resources.connections}
         />
       </GridItem>
     </Grid>;
@@ -163,7 +302,12 @@ module ProjectPage = {
       );
     switch (maybeProject) {
     | [] => <p> {"Project " ++ project_id ++ " not found" |> str} </p>
-    | [project, ..._] => <ProjectCard project />
+    | [project, ..._] =>
+      <ProjectCard
+        project
+        tenants={resources.resources.tenants}
+        connections={resources.resources.connections}
+      />
     };
   };
 };
