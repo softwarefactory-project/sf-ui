@@ -5,7 +5,7 @@
   "scripts": {
     "build": "bsb -make-world",
     "start": "bsb -make-world -w",
-    "serve": "mkdir -p dist && rsync -a tests/api/ dist/api/ && parcel serve ./src/index.html",
+    "serve": "mkdir -p dist && ln -s ../tests/api/ dist/api && parcel serve ./src/index.html",
     "dist": "parcel build ./src/index.html --public-url /",
     "test": "jest --verbose --testMatch **/tests/*.bs.js",
     "clean": "find src/ tests/ -name '*.bs.js' -delete && rm -Rf lib"
@@ -28,7 +28,7 @@
   },
   "jest": {
     "moduleNameMapper": {
-      "\\.(css|less)$": "<rootDir>/tests/styleMock.js"
+      "\\.(css|less|svg)$": "<rootDir>/tests/styleMock.js"
     }
   },
   "main": "index.js"

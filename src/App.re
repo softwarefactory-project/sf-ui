@@ -66,6 +66,51 @@ let getConnectionById =
   };
 };
 
+let displayImg = (width: string, height, src: string, alt: string) => {
+  <img src alt width height />;
+};
+
+module Asset = {
+  // require binding does not support complex string manipulation
+  [@bs.val] external require: string => string = "require";
+  let asset = path => require("../assets/" ++ path);
+
+  module Logo = {
+    let logo = name => asset("logos/" ++ name);
+    // the assets
+    let gerrit = logo("Gerrit_icon.svg");
+    let zuul = logo("Zuul_icon.svg");
+    let paste = logo("Paste_icon.svg");
+    let etherpad = logo("Etherpad_icon.svg");
+    let kibana = logo("Kibana_icon.svg");
+    let mumble = logo("Mumble_icon.svg");
+    let cgit = logo("CGIT_icon.svg");
+  };
+};
+
+module Service = {
+  let getLogoImg = displayImg("75", "75");
+
+  module Logo = {
+    [@react.component]
+    let make = (~name: string, ~link: string) => {
+      let displayLogo = (src: string, alt: string) => {
+        <a href=link> {getLogoImg(src, alt)} </a>;
+      };
+      switch (name) {
+      | "gerrit" => displayLogo(Asset.Logo.gerrit, "Gerrit")
+      | "zuul" => displayLogo(Asset.Logo.zuul, "Zuul")
+      | "paste" => displayLogo(Asset.Logo.paste, "Paste")
+      | "etherpad" => displayLogo(Asset.Logo.etherpad, "Eherpad")
+      | "kibana" => displayLogo(Asset.Logo.kibana, "Kibana")
+      | "mumble" => displayLogo(Asset.Logo.mumble, "Mumble")
+      | "cgit" => displayLogo(Asset.Logo.cgit, "CGIT")
+      | _ => React.null
+      };
+    };
+  };
+};
+
 module SRCard = {
   let buildCloneURLE =
       (connection: SF.Connection.connection, name: string): React.element => {
@@ -331,13 +376,8 @@ module TenantList = {
 
 module WelcomePage = {
   [@react.component]
-  let make = (~info: SF.Info.info, ~resources: SF.Resources.top) => {
+  let make = (~resources: SF.Resources.top) => {
     <Grid hasGutter=true>
-      <Bullseye>
-        <h1>
-          {"Welcome to software-factory " ++ info.version ++ "!" |> str}
-        </h1>
-      </Bullseye>
       <GridItem offset=Column._1 span=Column._10>
         <TenantList
           tenants={resources.resources.tenants}
@@ -367,25 +407,22 @@ module ProjectPage = {
 module Menu = {
   [@react.component]
   let make = (~services: list(SF.Info.service)) => {
-    <Nav variant=`Horizontal>
-      <NavList>
-        {services->renderList(service =>
-           <NavItem
-             key={service.name} isActive=false onClick={ev => Js.log(ev)}>
-             {service.name |> str}
-           </NavItem>
-         )}
-      </NavList>
-    </Nav>;
+    <Bullseye>
+      {services->renderList(service =>
+         <GridItem key={service.name} span=Column._1>
+           <Service.Logo name={service.name} link={service.path} />
+         </GridItem>
+       )}
+    </Bullseye>;
   };
 };
 
 module MainRouter = {
   [@react.component]
-  let make = (~info: SF.Info.info, ~resources: SF.Resources.top) =>
+  let make = (~resources: SF.Resources.top) =>
     <PageSection isFilled=true>
       {switch (ReasonReactRouter.useUrl().path) {
-       | [] => <WelcomePage info resources />
+       | [] => <WelcomePage resources />
        | ["project", project_id] => <ProjectPage project_id resources />
        | _ => <p> {"Not found" |> str} </p>
        }}
@@ -399,13 +436,17 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
   module MainWithContext = {
     [@react.component]
     let make = (~info: SF.Info.info) =>
-      <Page
-        header={
-          <PageHeader logo="logo" topNav={<Menu services={info.services} />} />
-        }>
+      <Page>
+        <PageHeader logo="logo" />
+        <Bullseye>
+          <h1>
+            {"Welcome to software-factory " ++ info.version ++ "!" |> str}
+          </h1>
+        </Bullseye>
+        <Menu services={info.services} />
         {switch (Res.use("local")) {
          | Res.Loading => <p> {"Loading resources..." |> str} </p>
-         | Res.Loaded(resources) => <MainRouter info resources />
+         | Res.Loaded(resources) => <MainRouter resources />
          }}
       </Page>;
   };
