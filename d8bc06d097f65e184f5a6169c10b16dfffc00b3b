@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9e3adab6_d7031efd",
+        "filename": "src/Resources.re",
+        "patchSetId": 1
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 7
+      },
+      "writtenOn": "2020-10-15T22:19:24Z",
+      "side": 1,
+      "message": "It\u0027s annoying that this does not returns a `tenant` instead of an `option(tenant)`",
+      "range": {
+        "startLine": 21,
+        "startChar": 4,
+        "endLine": 21,
+        "endChar": 24
+      },
+      "revId": "d8bc06d097f65e184f5a6169c10b16dfffc00b3b",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
