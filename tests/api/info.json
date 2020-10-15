@@ -5,6 +5,10 @@
       "path": "/r"
     },
     {
+      "name": "zuul",
+      "path": "/zuul"
+    },
+    {
       "name": "etherpad",
       "path": "/etherpad"
     },

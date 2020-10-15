@@ -66,6 +66,33 @@ let getConnectionById =
   };
 };
 
+let displayImg = (width: string, height, src: string, alt: string) => {
+  <img src alt width height />;
+};
+
+module Assets = {
+  let getLogoImg = displayImg("75", "75");
+
+  module Logo = {
+    [@react.component]
+    let make = (~name: string, ~link: string) => {
+      let displayLogo = (src: string, alt: string) => {
+        <a href=link> {getLogoImg(src, alt)} </a>;
+      };
+      switch (name) {
+      | "gerrit" => displayLogo("assets/logos/Gerrit_icon.svg", "Gerrit")
+      | "zuul" => displayLogo("assets/logos/Zuul_icon.svg", "Zuul")
+      | "paste" => displayLogo("assets/logos/Paste_icon.svg", "Paste")
+      | "etherpad" => displayLogo("assets/logos/Etherpad_icon.svg", "Eherpad")
+      | "kibana" => displayLogo("assets/logos/Kibana_icon.svg", "Kibana")
+      | "mumble" => displayLogo("assets/logos/Mumble_icon.svg", "Mumble")
+      | "cgit" => displayLogo("assets/logos/CGIT_icon.svg", "CGIT")
+      | _ => React.null
+      };
+    };
+  };
+};
+
 module SRCard = {
   let buildCloneURLE =
       (connection: SF.Connection.connection, name: string): React.element => {
@@ -331,13 +358,8 @@ module TenantList = {
 
 module WelcomePage = {
   [@react.component]
-  let make = (~info: SF.Info.info, ~resources: SF.Resources.top) => {
+  let make = (~resources: SF.Resources.top) => {
     <Grid hasGutter=true>
-      <Bullseye>
-        <h1>
-          {"Welcome to software-factory " ++ info.version ++ "!" |> str}
-        </h1>
-      </Bullseye>
       <GridItem offset=Column._1 span=Column._10>
         <TenantList
           tenants={resources.resources.tenants}
@@ -367,25 +389,22 @@ module ProjectPage = {
 module Menu = {
   [@react.component]
   let make = (~services: list(SF.Info.service)) => {
-    <Nav variant=`Horizontal>
-      <NavList>
-        {services->renderList(service =>
-           <NavItem
-             key={service.name} isActive=false onClick={ev => Js.log(ev)}>
-             {service.name |> str}
-           </NavItem>
-         )}
-      </NavList>
-    </Nav>;
+    <Bullseye>
+      {services->renderList(service =>
+         <GridItem span=Column._1>
+           <Assets.Logo name={service.name} link={service.path} />
+         </GridItem>
+       )}
+    </Bullseye>;
   };
 };
 
 module MainRouter = {
   [@react.component]
-  let make = (~info: SF.Info.info, ~resources: SF.Resources.top) =>
+  let make = (~resources: SF.Resources.top) =>
     <PageSection isFilled=true>
       {switch (ReasonReactRouter.useUrl().path) {
-       | [] => <WelcomePage info resources />
+       | [] => <WelcomePage resources />
        | ["project", project_id] => <ProjectPage project_id resources />
        | _ => <p> {"Not found" |> str} </p>
        }}
@@ -399,13 +418,17 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
   module MainWithContext = {
     [@react.component]
     let make = (~info: SF.Info.info) =>
-      <Page
-        header={
-          <PageHeader logo="logo" topNav={<Menu services={info.services} />} />
-        }>
+      <Page>
+        <PageHeader logo="logo" />
+        <Bullseye>
+          <h1>
+            {"Welcome to software-factory " ++ info.version ++ "!" |> str}
+          </h1>
+        </Bullseye>
+        <Menu services={info.services} />
         {switch (Res.use("local")) {
          | Res.Loading => <p> {"Loading resources..." |> str} </p>
-         | Res.Loaded(resources) => <MainRouter info resources />
+         | Res.Loaded(resources) => <MainRouter resources />
          }}
       </Page>;
   };
