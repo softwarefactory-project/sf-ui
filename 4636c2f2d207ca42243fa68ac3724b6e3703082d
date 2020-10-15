@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "85d1b715_febd296f",
+        "filename": "package.json",
+        "patchSetId": 1
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 7
+      },
+      "writtenOn": "2020-10-15T22:27:24Z",
+      "side": 1,
+      "message": "That doesn\u0027t seem to work consistently. There may be another way...",
+      "revId": "4636c2f2d207ca42243fa68ac3724b6e3703082d",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
