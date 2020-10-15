@@ -18,21 +18,45 @@ let resolveSR =
   };
 };
 
+let getProjectTenantName =
+    (project: SF.Project.project, default_tenant: string) => {
+  Some(
+    switch (project.tenant) {
+    | Some(tenant) => tenant
+    | None => default_tenant
+    },
+  );
+};
+
+let getTenant =
+    (tenant_id: string, tenants: list(SF.Tenant.tenant))
+    : option(SF.Tenant.tenant) => {
+  tenants->Belt.List.keep(tenant => tenant.name == tenant_id)->Belt.List.head;
+};
+
 let resolveProject =
     (
       default_tenant: string,
       repos: list(SF.Repo.repo),
+      tenants: list(SF.Tenant.tenant),
       project: SF.Project.project,
     )
     : SF.Project.project => {
   ...project,
-  tenant:
-    Some(
-      switch (project.tenant) {
-      | Some(tenant) => tenant
-      | None => default_tenant
-      },
-    ),
+  tenant: getProjectTenantName(project, default_tenant),
+  connection:
+    switch (project.connection) {
+    | Some(connection) => Some(connection)
+    | None =>
+      switch (getProjectTenantName(project, default_tenant)) {
+      | None => None
+      | Some(tenant_id) =>
+        switch (getTenant(tenant_id, tenants)) {
+        | None => None
+        | Some(tenant) => tenant.default_connection
+        }
+      }
+    },
   source_repositories:
     project.source_repositories->Belt.List.map(resolveSR(repos)),
 };
@@ -45,7 +69,11 @@ let resolveResources =
     projects:
       resources.resources.projects
       ->Belt.List.map(
-          resolveProject(default_tenant, resources.resources.repos),
+          resolveProject(
+            default_tenant,
+            resources.resources.repos,
+            resources.resources.tenants,
+          ),
         ),
   },
 };

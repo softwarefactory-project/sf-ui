@@ -146,55 +146,14 @@ module ProjectCard = {
     ("Mailing-lists", maybe_contacts(project.mailing_lists)),
   ];
 
-  let getTenant =
-      (tenant_id: string, tenants: list(SF.Tenant.tenant))
-      : option(SF.Tenant.tenant) => {
-    tenants
-    ->Belt.List.keep(tenant => tenant.name == tenant_id)
-    ->Belt.List.get(0);
-  };
-
-  let getTenantConnection =
-      (tenant: SF.Tenant.tenant, connections: list(SF.Connection.connection))
-      : option(SF.Connection.connection) => {
-    switch (tenant.default_connection) {
-    | None => None
-    | Some(connection_id) =>
-      Belt.List.keep(connections, connection =>
-        connection.name == connection_id
-      )
-      ->Belt.List.get(0)
-    };
-  };
-
-  let getConnectionFromTenantById =
-      (
-        tenant_id: string,
-        tenants: list(SF.Tenant.tenant),
-        connections: list(SF.Connection.connection),
-      )
-      : option(SF.Connection.connection) => {
-    let maybeTenant = getTenant(tenant_id, tenants);
-    switch (maybeTenant) {
-    | None => None
-    | Some(tenant) => getTenantConnection(tenant, connections)
-    };
-  };
-
   let getConnection =
       (
         project: SF.Project.project,
-        tenants: list(SF.Tenant.tenant),
         connections: list(SF.Connection.connection),
       )
       : option(SF.Connection.connection) => {
     switch (project.connection) {
-    | None =>
-      switch (project.tenant) {
-      | None => getConnectionFromTenantById("local", tenants, connections)
-      | Some(tenant_id) =>
-        getConnectionFromTenantById(tenant_id, tenants, connections)
-      }
+    | None => None
     | Some(connection_id) =>
       Belt.List.keep(connections, connection =>
         connection_id == connection.name
@@ -207,7 +166,6 @@ module ProjectCard = {
   let make =
       (
         ~project: SF.Project.project,
-        ~tenants: list(SF.Tenant.tenant),
         ~connections: list(SF.Connection.connection),
         ~isSmall: bool=false,
       ) =>
@@ -231,7 +189,7 @@ module ProjectCard = {
         </List>
         <br />
         {let project_connection =
-           getConnection(project, tenants, connections);
+           getConnection(project, connections);
          <SRsCard
            srs={project.source_repositories}
            project_connection
@@ -267,7 +225,6 @@ module TenantCard = {
            <ProjectCard
              key={project.name}
              project
-             tenants=[tenant]
              connections
              isSmall=true
            />
@@ -332,7 +289,6 @@ module ProjectPage = {
     | [project, ..._] =>
       <ProjectCard
         project
-        tenants={resources.resources.tenants}
         connections={resources.resources.connections}
       />
     };
