@@ -42,8 +42,8 @@ let maybe_flat = v => maybe_attribute(v, v => Flat(v));
 let maybe_link = v => maybe_attribute(v, v => Link(v));
 let maybe_contacts = v => maybe_attribute(v, v => Contact(v));
 
-let buildURL = (url: string) => {
-  <a href=url> {url |> str} </a>;
+let buildURL = (url: string, label: string) => {
+  <a href=url> {label |> str} </a>;
 };
 
 let boxTitleStyle =
@@ -78,13 +78,14 @@ module SRCard = {
 
   let buildGitwebURLBrowserE =
       (connection: SF.Connection.connection, name: string): React.element => {
+    let toA = (url: string) => {
+      buildURL(url, "Browse tree");
+    };
     switch (connection.base_url, connection.connection_type) {
     | (Some(base_url), GERRIT) =>
-      base_url ++ "/gitweb?p=" ++ name ++ ".git;a=tree" |> buildURL
-    | (Some(base_url), GITHUB | GITLAB) =>
-      base_url ++ "/" ++ name |> buildURL
-    | (Some(base_url), PAGURE) =>
-      base_url ++ "/" ++ name ++ "/tree" |> buildURL
+      base_url ++ "/gitweb?p=" ++ name ++ ".git;a=tree" |> toA
+    | (Some(base_url), GITHUB | GITLAB) => base_url ++ "/" ++ name |> toA
+    | (Some(base_url), PAGURE) => base_url ++ "/" ++ name ++ "/tree" |> toA
     | (_, GIT) => React.null
     | (None, _) => React.null
     };
@@ -92,11 +93,14 @@ module SRCard = {
 
   let buildGitwebURLLastCommitsE =
       (connection: SF.Connection.connection, name: string): React.element => {
+    let toA = (url: string) => {
+      buildURL(url, "Last commits");
+    };
     switch (connection.base_url, connection.connection_type) {
     | (Some(base_url), GERRIT) =>
-      base_url ++ "/gitweb?p=" ++ name ++ ".git;a=shortlog" |> buildURL
+      base_url ++ "/gitweb?p=" ++ name ++ ".git;a=shortlog" |> toA
     | (Some(base_url), GITHUB | GITLAB | PAGURE) =>
-      base_url ++ "/" ++ name ++ "/commits" |> buildURL
+      base_url ++ "/" ++ name ++ "/commits" |> toA
     | (_, GIT) => React.null
     | (None, _) => React.null
     };
@@ -104,15 +108,17 @@ module SRCard = {
 
   let buildOpenChangesE =
       (connection: SF.Connection.connection, name: string): React.element => {
+    let toA = (url: string) => {
+      buildURL(url, "Open changes");
+    };
     switch (connection.base_url, connection.connection_type) {
     | (Some(base_url), GERRIT) =>
-      base_url ++ "/q/status:open+project:" ++ name |> buildURL
-    | (Some(base_url), GITHUB) =>
-      base_url ++ "/" ++ name ++ "/pulls" |> buildURL
+      base_url ++ "/q/status:open+project:" ++ name |> toA
+    | (Some(base_url), GITHUB) => base_url ++ "/" ++ name ++ "/pulls" |> toA
     | (Some(base_url), PAGURE) =>
-      base_url ++ "/" ++ name ++ "/pull-requests" |> buildURL
+      base_url ++ "/" ++ name ++ "/pull-requests" |> toA
     | (Some(base_url), GITLAB) =>
-      base_url ++ "/" ++ name ++ "/merge_requests" |> buildURL
+      base_url ++ "/" ++ name ++ "/merge_requests" |> toA
     | (_, GIT) => React.null
     | (None, _) => React.null
     };
@@ -144,32 +150,24 @@ module SRCard = {
       <CardTitle>
         <span> <b> {sr.name |> str} </b> </span>
         {renderIfSome(sr.description, desc =>
-           <span> {"- " |> str} {desc |> str} </span>
+           <span> {" - " |> str} {desc |> str} </span>
          )}
       </CardTitle>
       <CardBody>
-        <List>
-          {renderIfSome(connection, connection => {
-             <>
-               <ListItem>
-                 <span> <b> {"Clone: " |> str} </b> </span>
-                 <span> {connection->buildCloneURLE(sr.name)} </span>
-               </ListItem>
-               <ListItem>
-                 <span> <b> {"Browse: " |> str} </b> </span>
-                 <span> {connection->buildGitwebURLBrowserE(sr.name)} </span>
-               </ListItem>
-               <ListItem>
-                 <span> <b> {"Last commits: " |> str} </b> </span>
-                 <span> {connection->buildGitwebURLLastCommitsE(sr.name)} </span>
-               </ListItem>
-               <ListItem>
-                 <span> <b> {"Open changes: " |> str} </b> </span>
-                 <span> {connection->buildOpenChangesE(sr.name)} </span>
-               </ListItem>
-             </>
-           })}
-        </List>
+        {renderIfSome(connection, connection => {
+           <>
+             <div> {connection->buildCloneURLE(sr.name)} </div>
+             <div>
+               <span> {connection->buildGitwebURLBrowserE(sr.name)} </span>
+               <span> {" / " |> str} </span>
+               <span>
+                 {connection->buildGitwebURLLastCommitsE(sr.name)}
+               </span>
+               <span> {" / " |> str} </span>
+               <span> {connection->buildOpenChangesE(sr.name)} </span>
+             </div>
+           </>
+         })}
       </CardBody>
     </Card>;
   };
@@ -186,18 +184,20 @@ module SRsCard = {
     <Card>
       <CardTitle style=boxTitleStyle> "Projects' repositories" </CardTitle>
       <CardBody>
-        {srs->renderList(sr =>
-           <SRCard key={sr.name} sr project_connection connections />
-         )}
+        <br />
+        <Grid hasGutter=true>
+          {srs->renderList(sr => {
+             <GridItem key={sr.name} span=Column._6>
+               <SRCard key={sr.name} sr project_connection connections />
+             </GridItem>
+           })}
+        </Grid>
       </CardBody>
     </Card>;
   };
 };
 
 module ProjectCard = {
-  // Display basic information
-  // The idea is to let the user click to get a new Component displayed
-  // that will contain the full listing of repo + useful links ...
   let handleClick =
       (project_id: string, isClickable: bool, _: ReactEvent.Mouse.t) => {
     isClickable ? ReasonReactRouter.push("project/" ++ project_id) : ();
@@ -210,7 +210,7 @@ module ProjectCard = {
         <b> {label ++ ": " |> str} </b>
         {switch (attribute) {
          | Flat(value) => value |> str
-         | Link(link) => link |> buildURL
+         | Link(link) => link |> buildURL(link)
          | Contact(links) =>
            links->renderList(contact =>
              <span key=contact>
