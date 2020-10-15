@@ -48,6 +48,20 @@ let boxTitleStyle =
     (),
   );
 
+let getConnectionById =
+    (
+      connections: list(SF.Connection.connection),
+      connection_id: option(string),
+    )
+    : option(SF.Connection.connection) => {
+  switch (connection_id) {
+  | Some(connection_id) =>
+    Belt.List.keep(connections, cnx => cnx.name == connection_id)
+    ->Belt.List.head
+  | None => None
+  };
+};
+
 module SRCard = {
   let getConnection =
       (
@@ -58,8 +72,7 @@ module SRCard = {
       : option(SF.Connection.connection) => {
     switch (sr.connection) {
     | Some(connection_id) =>
-      Belt.List.keep(connections, cnx => cnx.name == connection_id)
-      ->Belt.List.get(0)
+      getConnectionById(connections, Some(connection_id))
     | None => project_connection
     };
   };
@@ -146,22 +159,6 @@ module ProjectCard = {
     ("Mailing-lists", maybe_contacts(project.mailing_lists)),
   ];
 
-  let getConnection =
-      (
-        project: SF.Project.project,
-        connections: list(SF.Connection.connection),
-      )
-      : option(SF.Connection.connection) => {
-    switch (project.connection) {
-    | None => None
-    | Some(connection_id) =>
-      Belt.List.keep(connections, connection =>
-        connection_id == connection.name
-      )
-      ->Belt.List.get(0)
-    };
-  };
-
   [@react.component]
   let make =
       (
@@ -188,13 +185,14 @@ module ProjectCard = {
            )}
         </List>
         <br />
-        {let project_connection =
-           getConnection(project, connections);
-         <SRsCard
-           srs={project.source_repositories}
-           project_connection
-           connections
-         />}
+        <SRsCard
+          srs={project.source_repositories}
+          project_connection={getConnectionById(
+            connections,
+            project.connection,
+          )}
+          connections
+        />
       </CardBody>
     </Card>;
 };
@@ -222,12 +220,7 @@ module TenantCard = {
       <CardBody>
         <Bullseye> "This tenant owns the following projects" </Bullseye>
         {tenant_projects->renderList(project =>
-           <ProjectCard
-             key={project.name}
-             project
-             connections
-             isSmall=true
-           />
+           <ProjectCard key={project.name} project connections isSmall=true />
          )}
       </CardBody>
     </Card>;
@@ -287,10 +280,7 @@ module ProjectPage = {
     switch (maybeProject) {
     | [] => <p> {"Project " ++ project_id ++ " not found" |> str} </p>
     | [project, ..._] =>
-      <ProjectCard
-        project
-        connections={resources.resources.connections}
-      />
+      <ProjectCard project connections={resources.resources.connections} />
     };
   };
 };
