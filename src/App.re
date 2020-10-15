@@ -16,10 +16,6 @@ let renderList = (xs, f) => xs->Belt.List.map(f)->listToReactArray;
 
 let str = React.string;
 
-// Need to create the PF bindind for colors palette
-// https://www.patternfly.org/v4/guidelines/colors
-let pf_global__palette__light_blue_400 = "#008BAD";
-
 type attribute_type =
   | Flat(string)
   | Link(string)
@@ -46,9 +42,13 @@ let buildURL = (url: string, label: string) => {
   <a href=url> {label |> str} </a>;
 };
 
+let boxStyle = ReactDOM.Style.make(~borderRadius="10px", ());
+
 let boxTitleStyle =
   ReactDOM.Style.make(
-    ~backgroundColor=pf_global__palette__light_blue_400,
+    ~borderTopLeftRadius="10px",
+    ~borderTopRightRadius="10px",
+    ~backgroundColor="var(--pf-global--palette--blue-100)",
     (),
   );
 
@@ -146,7 +146,7 @@ module SRCard = {
         ~connections: list(SF.Connection.connection),
       ) => {
     let connection = getConnection(sr, project_connection, connections);
-    <Card isCompact=true>
+    <Card isCompact=true style=boxStyle>
       <CardTitle>
         <span> <b> {sr.name |> str} </b> </span>
         {renderIfSome(sr.description, desc =>
@@ -181,7 +181,7 @@ module SRsCard = {
         ~project_connection: option(SF.Connection.connection),
         ~connections: list(SF.Connection.connection),
       ) => {
-    <Card>
+    <Card isCompact=true style=boxStyle>
       <CardTitle style=boxTitleStyle> "Projects' repositories" </CardTitle>
       <CardBody>
         <br />
@@ -284,7 +284,7 @@ module TenantCard = {
         ~tenant_projects: list(SF.Project.project),
         ~connections: list(SF.Connection.connection),
       ) => {
-    <Card key={tenant.name}>
+    <Card key={tenant.name} isCompact=true style=boxStyle>
       <CardTitle style=boxTitleStyle>
         <span> {tenant.name |> str} </span>
         <span> {" - " |> str} </span>
