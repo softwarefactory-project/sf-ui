@@ -1,4 +1,5 @@
 open Patternfly;
+open Patternfly.Layout;
 
 let renderIfSome = (x: option('t), f: 't => React.element) =>
   switch (x) {
@@ -433,14 +434,24 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
   module Res = Resources.Hook(Fetcher);
   module Inf = Info.Hook(Fetcher);
 
+  let getHeaderLogo = (info: SF.Info.info) =>
+    <Brand
+      alt="SF"
+      src={"data:image/png;base64," ++ info.header_logo_b64data}
+    />;
+
   module MainWithContext = {
     [@react.component]
     let make = (~info: SF.Info.info) =>
       <Page>
-        <PageHeader logo="logo" />
+        <PageHeader logo={getHeaderLogo(info)} />
         <Bullseye>
           <h1>
-            {"Welcome to software-factory " ++ info.version ++ "!" |> str}
+            <img
+              src={"data:image/png;base64," ++ info.splash_image_b64data}
+              width="250"
+              height="250"
+            />
           </h1>
         </Bullseye>
         <Menu services={info.services} />
