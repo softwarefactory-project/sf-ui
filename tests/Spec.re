@@ -20,36 +20,37 @@ module StubFetch = {
   };
 };
 
+// See https://github.com/reasonml/reason-react/issues/627
+[@bs.val]
+external toActualPromise: Js.Promise.t('a) => Js.Promise.t('a) =
+  "Promise.resolve";
+
 let testComponentHook =
     (
       container: Dom.element,
       component: React.element,
-      assertion: Dom.element => unit,
+      assertion: Dom.element => 'a,
     ) => {
-  ignore(
+  toActualPromise(
     actAsync(() =>
       Js.Promise.resolve(ReactDOMRe.render(component, container))
-    )
-    |> Js.Promise.then_(() => {assertion(container) |> Js.Promise.resolve}),
-  );
+    ),
+  )
+  |> Js.Promise.then_(() =>
+       expect(assertion(container)) |> toBe(true) |> Js.Promise.resolve
+     );
 };
-
 describe("Basic test", () => {
   let container = ref(None);
   beforeEach(prepareContainer(container));
   afterEach(cleanupContainer(container));
 
-  testAsync("can render resources", finish => {
+  testPromise("can render resources", () => {
     module StubApp = App.Main(StubFetch);
     let container = getContainer(container);
-    testComponentHook(container, <StubApp />, container => {
-      finish(
-        expect(
-          container->DOM.findBySelectorAndTextContent("span", "rdoproject.org")
-          |> Belt.Option.isSome,
-        )
-        |> toBe(true),
-      )
-    });
+    testComponentHook(container, <StubApp />, container =>
+      container->DOM.findBySelectorAndTextContent("span", "rdoproject.org")
+      |> Belt.Option.isSome
+    );
   });
 });
