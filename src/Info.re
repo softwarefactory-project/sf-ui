@@ -2,7 +2,7 @@
 module Hook = (Fetcher: Dependencies.Fetcher) => {
   type state =
     | Loading
-    | Loaded(SF.Info.info);
+    | Loaded(SF.Info.t);
 
   let use = () => {
     let (state, setState) = React.useState(() => Loading);
@@ -16,7 +16,13 @@ module Hook = (Fetcher: Dependencies.Fetcher) => {
         Js.log("Fetching resources...");
         Js.Promise.(
           Fetcher.fetch("/api/info.json")
-          |> then_(json => json |> SF.Info.parse |> updateInfo |> resolve)
+          |> then_(json =>
+               json
+               |> SF.Info.decode
+               |> Belt.Result.getExn
+               |> updateInfo
+               |> resolve
+             )
           |> ignore
         );
       | _ => ()

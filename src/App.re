@@ -53,20 +53,6 @@ let boxTitleStyle =
     (),
   );
 
-let getConnectionById =
-    (
-      connections: list(SF.Connection.connection),
-      connection_id: option(string),
-    )
-    : option(SF.Connection.connection) => {
-  switch (connection_id) {
-  | Some(connection_id) =>
-    Belt.List.keep(connections, cnx => cnx.name == connection_id)
-    ->Belt.List.head
-  | None => None
-  };
-};
-
 let displayImg = (width: string, height, src: string, alt: string) => {
   <img src alt width height />;
 };
@@ -113,85 +99,8 @@ module Service = {
 };
 
 module SRCard = {
-  let buildCloneURLE =
-      (connection: SF.Connection.connection, name: string): React.element => {
-    switch (connection.base_url) {
-    | None => React.null
-    | Some(base_url) =>
-      <span> {"git clone " ++ base_url ++ "/" ++ name |> str} </span>
-    };
-  };
-
-  let buildGitwebURLBrowserE =
-      (connection: SF.Connection.connection, name: string): React.element => {
-    let toA = (url: string) => {
-      buildURL(url, "Browse tree");
-    };
-    switch (connection.base_url, connection.connection_type) {
-    | (Some(base_url), GERRIT) =>
-      base_url ++ "/gitweb?p=" ++ name ++ ".git;a=tree" |> toA
-    | (Some(base_url), GITHUB | GITLAB) => base_url ++ "/" ++ name |> toA
-    | (Some(base_url), PAGURE) => base_url ++ "/" ++ name ++ "/tree" |> toA
-    | (_, GIT) => React.null
-    | (None, _) => React.null
-    };
-  };
-
-  let buildGitwebURLLastCommitsE =
-      (connection: SF.Connection.connection, name: string): React.element => {
-    let toA = (url: string) => {
-      buildURL(url, "Last commits");
-    };
-    switch (connection.base_url, connection.connection_type) {
-    | (Some(base_url), GERRIT) =>
-      base_url ++ "/gitweb?p=" ++ name ++ ".git;a=shortlog" |> toA
-    | (Some(base_url), GITHUB | GITLAB | PAGURE) =>
-      base_url ++ "/" ++ name ++ "/commits" |> toA
-    | (_, GIT) => React.null
-    | (None, _) => React.null
-    };
-  };
-
-  let buildOpenChangesE =
-      (connection: SF.Connection.connection, name: string): React.element => {
-    let toA = (url: string) => {
-      buildURL(url, "Open changes");
-    };
-    switch (connection.base_url, connection.connection_type) {
-    | (Some(base_url), GERRIT) =>
-      base_url ++ "/q/status:open+project:" ++ name |> toA
-    | (Some(base_url), GITHUB) => base_url ++ "/" ++ name ++ "/pulls" |> toA
-    | (Some(base_url), PAGURE) =>
-      base_url ++ "/" ++ name ++ "/pull-requests" |> toA
-    | (Some(base_url), GITLAB) =>
-      base_url ++ "/" ++ name ++ "/merge_requests" |> toA
-    | (_, GIT) => React.null
-    | (None, _) => React.null
-    };
-  };
-
-  let getConnection =
-      (
-        sr: SF.Project.sourceRepository,
-        project_connection: option(SF.Connection.connection),
-        connections: list(SF.Connection.connection),
-      )
-      : option(SF.Connection.connection) => {
-    switch (sr.connection) {
-    | Some(connection_id) =>
-      getConnectionById(connections, Some(connection_id))
-    | None => project_connection
-    };
-  };
-
   [@react.component]
-  let make =
-      (
-        ~sr: SF.Project.sourceRepository,
-        ~project_connection: option(SF.Connection.connection),
-        ~connections: list(SF.Connection.connection),
-      ) => {
-    let connection = getConnection(sr, project_connection, connections);
+  let make = (~sr: SF.V2.SourceRepository.t) => {
     <Card isCompact=true style=boxStyle>
       <CardTitle>
         <span> <b> {sr.name |> str} </b> </span>
@@ -199,34 +108,14 @@ module SRCard = {
            <span> {" - " |> str} {desc |> str} </span>
          )}
       </CardTitle>
-      <CardBody>
-        {renderIfSome(connection, connection => {
-           <>
-             <div> {connection->buildCloneURLE(sr.name)} </div>
-             <div>
-               <span> {connection->buildGitwebURLBrowserE(sr.name)} </span>
-               <span> {" / " |> str} </span>
-               <span>
-                 {connection->buildGitwebURLLastCommitsE(sr.name)}
-               </span>
-               <span> {" / " |> str} </span>
-               <span> {connection->buildOpenChangesE(sr.name)} </span>
-             </div>
-           </>
-         })}
-      </CardBody>
+      <CardBody />
     </Card>;
   };
 };
 
 module SRsCard = {
   [@react.component]
-  let make =
-      (
-        ~srs: list(SF.Project.sourceRepository),
-        ~project_connection: option(SF.Connection.connection),
-        ~connections: list(SF.Connection.connection),
-      ) => {
+  let make = (~srs: list(SF.V2.SourceRepository.t)) => {
     <Card isCompact=true style=boxStyle>
       <CardTitle style=boxTitleStyle> "Projects' repositories" </CardTitle>
       <CardBody>
@@ -234,7 +123,7 @@ module SRsCard = {
         <Grid hasGutter=true>
           {srs->renderList(sr => {
              <GridItem key={sr.name} span=Column._6>
-               <SRCard key={sr.name} sr project_connection connections />
+               <SRCard key={sr.name} sr />
              </GridItem>
            })}
         </Grid>
@@ -269,25 +158,19 @@ module ProjectCard = {
       </ListItem>,
     );
 
-  let project_attrs = (project: SF.Project.project) => [
+  let project_attrs = (project: SF.V2.Project.t) => [
     ("Website", maybe_link(project.website)),
     ("Issue-tracker", maybe_link(project.issue_tracker_url)),
   ];
 
-  let project_full_attrs = (project: SF.Project.project) => [
-    ("Tenant", maybe_flat(project.tenant)),
+  let project_full_attrs = (project: SF.V2.Project.t) => [
     ("Documentation", maybe_link(project.documentation)),
     ("Contacts", maybe_contacts(project.contacts)),
     ("Mailing-lists", maybe_contacts(project.mailing_lists)),
   ];
 
   [@react.component]
-  let make =
-      (
-        ~project: SF.Project.project,
-        ~connections: list(SF.Connection.connection),
-        ~isSmall: bool=false,
-      ) =>
+  let make = (~project: SF.V2.Project.t, ~isSmall: bool=false) =>
     <Card
       key={project.name}
       isCompact=true
@@ -307,29 +190,14 @@ module ProjectCard = {
            )}
         </List>
         <br />
-        {renderIfNot(
-           isSmall,
-           <SRsCard
-             srs={project.source_repositories}
-             project_connection={getConnectionById(
-               connections,
-               project.connection,
-             )}
-             connections
-           />,
-         )}
+        {renderIfNot(isSmall, <SRsCard srs={project.source_repositories} />)}
       </CardBody>
     </Card>;
 };
 
 module TenantCard = {
   [@react.component]
-  let make =
-      (
-        ~tenant: SF.Tenant.tenant,
-        ~tenant_projects: list(SF.Project.project),
-        ~connections: list(SF.Connection.connection),
-      ) => {
+  let make = (~tenant: SF.V2.Tenant.t) => {
     <Card key={tenant.name} isCompact=true style=boxStyle>
       <CardTitle style=boxTitleStyle>
         <span> {tenant.name |> str} </span>
@@ -344,9 +212,10 @@ module TenantCard = {
       </CardTitle>
       <CardBody>
         <Bullseye> "This tenant owns the following projects" </Bullseye>
-        {tenant_projects->renderList(project =>
-           <ProjectCard key={project.name} project connections isSmall=true />
-         )}
+        {tenant.projects
+         ->renderList(project =>
+             <ProjectCard key={project.name} project isSmall=true />
+           )}
       </CardBody>
     </Card>;
   };
@@ -354,37 +223,20 @@ module TenantCard = {
 
 module TenantList = {
   [@react.component]
-  let make =
-      (
-        ~tenants: list(SF.Tenant.tenant),
-        ~projects: list(SF.Project.project),
-        ~connections: list(SF.Connection.connection),
-      ) =>
+  let make = (~tenants: list(SF.V2.Tenant.t)) =>
     <Grid hasGutter=true>
       {tenants->renderList(tenant => {
-         <GridItem key={tenant.name}>
-           <TenantCard
-             tenant
-             connections
-             tenant_projects={
-               projects |> SF.Project.filterProjectsByTenant(tenant.name)
-             }
-           />
-         </GridItem>
+         <GridItem key={tenant.name}> <TenantCard tenant /> </GridItem>
        })}
     </Grid>;
 };
 
 module WelcomePage = {
   [@react.component]
-  let make = (~resources: SF.Resources.top) => {
+  let make = (~resources: SF.V2.t) => {
     <Grid hasGutter=true>
       <GridItem offset=Column._1 span=Column._10>
-        <TenantList
-          tenants={resources.resources.tenants}
-          projects={resources.resources.projects}
-          connections={resources.resources.connections}
-        />
+        <TenantList tenants={resources.tenants} />
       </GridItem>
     </Grid>;
   };
@@ -392,15 +244,16 @@ module WelcomePage = {
 
 module ProjectPage = {
   [@react.component]
-  let make = (~project_id: string, ~resources: SF.Resources.top) => {
+  let make = (~project_id: string, ~resources: SF.V2.t) => {
     let maybeProject =
-      Belt.List.keep(resources.resources.projects, project =>
-        project.name == project_id
-      );
+      resources.tenants
+      ->Belt.List.map(tenant => tenant.projects)
+      ->Belt.List.flatten
+      ->Belt.List.keep(project => project.name == project_id)
+      ->Belt.List.head;
     switch (maybeProject) {
-    | [] => <p> {"Project " ++ project_id ++ " not found" |> str} </p>
-    | [project, ..._] =>
-      <ProjectCard project connections={resources.resources.connections} />
+    | Some(project) => <ProjectCard project />
+    | None => <p> {"Project " ++ project_id ++ " not found" |> str} </p>
     };
   };
 };
@@ -420,7 +273,7 @@ module Menu = {
 
 module MainRouter = {
   [@react.component]
-  let make = (~resources: SF.Resources.top) =>
+  let make = (~resources: SF.V2.t) =>
     <PageSection isFilled=true>
       {switch (ReasonReactRouter.useUrl().path) {
        | [] => <WelcomePage resources />
@@ -434,7 +287,7 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
   module Res = Resources.Hook(Fetcher);
   module Inf = Info.Hook(Fetcher);
 
-  let getHeaderLogo = (info: SF.Info.info) =>
+  let getHeaderLogo = (info: SF.Info.t) =>
     <Brand
       alt="SF"
       src={"data:image/png;base64," ++ info.header_logo_b64data}
@@ -442,7 +295,7 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
 
   module MainWithContext = {
     [@react.component]
-    let make = (~info: SF.Info.info) =>
+    let make = (~info: SF.Info.t) =>
       <Page>
         <PageHeader logo={getHeaderLogo(info)} />
         <Bullseye>
