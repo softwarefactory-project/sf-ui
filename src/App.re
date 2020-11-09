@@ -54,7 +54,13 @@ let boxTitleStyle =
   );
 
 let displayImg = (width: string, height, src: string, alt: string) => {
-  <img src alt width height style={ReactDOM.Style.make(~margin="5px", ())} />;
+  <img
+    src
+    alt
+    width
+    height
+    style={ReactDOM.Style.make(~marginLeft="5px", ~marginRight="5px", ())}
+  />;
 };
 
 module Asset = {
@@ -72,6 +78,10 @@ module Asset = {
     let kibana = logo("Kibana_icon.svg");
     let mumble = logo("Mumble_icon.svg");
     let cgit = logo("CGIT_icon.svg");
+    let avatar =
+      require(
+        "@patternfly/react-core/src/components/Avatar/examples/avatarImg.svg",
+      );
   };
 };
 
@@ -81,9 +91,12 @@ module Service = {
   module Logo = {
     [@react.component]
     let make = (~name: string, ~link: string) => {
-      let displayLogo = (src: string, alt: string) => {
-        <a href=link> {getLogoImg(src, alt)} </a>;
-      };
+      let displayLogo = (src: string, alt: string) =>
+        <>
+          <a href=link> {getLogoImg(src, alt)} </a>
+          <center> {alt |> React.string} </center>
+        </>;
+
       switch (name) {
       | "gerrit" => displayLogo(Asset.Logo.gerrit, "Gerrit")
       | "zuul" => displayLogo(Asset.Logo.zuul, "Zuul")
@@ -317,26 +330,44 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
       src={"data:image/png;base64," ++ info.header_logo_b64data}
     />;
 
+  let splashLogo = (info: SF.Info.t) =>
+    <Bullseye>
+      <img
+        src={"data:image/png;base64," ++ info.splash_image_b64data}
+        width="250"
+        height="250"
+      />
+    </Bullseye>;
+
   module MainWithContext = {
     [@react.component]
-    let make = (~info: SF.Info.t) =>
-      <Page>
-        <PageHeader logo={getHeaderLogo(info)} />
-        <Bullseye>
-          <h1>
-            <img
-              src={"data:image/png;base64," ++ info.splash_image_b64data}
-              width="250"
-              height="250"
-            />
-          </h1>
-        </Bullseye>
+    let make = (~info: SF.Info.t) => {
+      let header =
+        <PageHeader
+          logo={getHeaderLogo(info)}
+          headerTools={
+            <PageHeaderTools>
+              <PageHeaderToolsGroup>
+                <PageHeaderToolsItem>
+                  <Button variant=`Plain> <Icons.Cog /> </Button>
+                </PageHeaderToolsItem>
+                <PageHeaderToolsItem>
+                  <Button variant=`Plain> <Icons.Help /> </Button>
+                </PageHeaderToolsItem>
+              </PageHeaderToolsGroup>
+              <Avatar src=Asset.Logo.avatar alt="Avatar image" />
+            </PageHeaderTools>
+          }
+        />;
+      <Page header>
+        {splashLogo(info)}
         <Menu services={info.services} />
         {switch (Res.use("local")) {
          | Res.Loading => <p> {"Loading resources..." |> str} </p>
          | Res.Loaded(resources) => <MainRouter resources />
          }}
       </Page>;
+    };
   };
 
   [@react.component]
