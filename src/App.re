@@ -320,6 +320,63 @@ module MainRouter = {
     </PageSection>;
 };
 
+module Login = {
+  module LoginButton = {
+    let fakeLogin = () => {
+      open JustgageReasonCookie;
+      Cookie.setString(
+        "auth_pubtkt",
+        "cid%3D11%3Buid%3Dadmin%3Bvaliduntil%3D1606139056.416925",
+      );
+      Auth.Login("admin");
+    };
+    [@react.component]
+    let make = (~auth: Auth.t) => {
+      let (_state, dispatch) = auth;
+      // TODO: add login page here
+      <Button variant=`Secondary onClick={_ => dispatch(fakeLogin())}>
+        {"Login" |> React.string}
+      </Button>;
+    };
+  };
+
+  module LogoutButton = {
+    [@react.component]
+    let make = (~auth: Auth.t) => {
+      let (_state, dispatch) = auth;
+      // TODO: add login page here
+      <Button variant=`Secondary onClick={_ => dispatch(Auth.Logout)}>
+        {"Logout" |> React.string}
+      </Button>;
+    };
+  };
+
+  module Header = {
+    [@react.component]
+    let make = (~auth: Auth.t) => {
+      <PageHeaderToolsGroup>
+        {switch (auth) {
+         | (Some({name}), _) =>
+           <>
+             <PageHeaderToolsGroup>
+               <PageHeaderToolsItem>
+                 <p> {"Welcome " ++ name |> str} </p>
+               </PageHeaderToolsItem>
+               <PageHeaderToolsItem>
+                 <Button variant=`Plain> <Icons.Cog /> </Button>
+               </PageHeaderToolsItem>
+               <PageHeaderToolsItem>
+                 <LogoutButton auth />
+               </PageHeaderToolsItem>
+             </PageHeaderToolsGroup>
+           </>
+         | (None, _) => <LoginButton auth />
+         }}
+      </PageHeaderToolsGroup>;
+    };
+  };
+};
+
 module Main = (Fetcher: Dependencies.Fetcher) => {
   module Res = Resources.Hook(Fetcher);
   module Inf = Info.Hook(Fetcher);
@@ -341,24 +398,20 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
 
   module MainWithContext = {
     [@react.component]
-    let make = (~info: SF.Info.t) => {
+    let make = (~info: SF.Info.t, ~auth: Auth.t) => {
       let header =
         <PageHeader
           logo={getHeaderLogo(info)}
           headerTools={
             <PageHeaderTools>
-              <PageHeaderToolsGroup>
-                <PageHeaderToolsItem>
-                  <Button variant=`Plain> <Icons.Cog /> </Button>
-                </PageHeaderToolsItem>
-                <PageHeaderToolsItem>
-                  <Button variant=`Plain> <Icons.Help /> </Button>
-                </PageHeaderToolsItem>
-              </PageHeaderToolsGroup>
-              <Avatar src=Asset.Logo.avatar alt="Avatar image" />
+              <Login.Header auth />
+              <PageHeaderToolsItem>
+                <Button variant=`Plain> <Icons.Help /> </Button>
+              </PageHeaderToolsItem>
             </PageHeaderTools>
           }
         />;
+
       <Page header>
         {splashLogo(info)}
         <Menu services={info.services} />
@@ -371,9 +424,10 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
   };
 
   [@react.component]
-  let make = () =>
-    switch (Inf.use()) {
-    | Inf.Loading => <p> {"Loading..." |> str} </p>
-    | Inf.Loaded(info) => <MainWithContext info />
+  let make = () => {
+    switch (Inf.use(), Auth.Hook.use()) {
+    | (Inf.Loading, _auth) => <p> {"Loading..." |> str} </p>
+    | (Inf.Loaded(info), auth) => <MainWithContext info auth />
     };
+  };
 };
