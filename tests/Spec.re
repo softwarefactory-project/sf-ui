@@ -49,7 +49,7 @@ describe("Basic test", () => {
     module StubApp = App.Main(StubFetch);
     let container = getContainer(container);
     testComponentHook(container, <StubApp />, container =>
-      container->DOM.findBySelectorAndTextContent("span", "rdoproject.org")
+      container->DOM.findBySelectorAndTextContent("span", "local")
       |> Belt.Option.isSome
     );
   });
