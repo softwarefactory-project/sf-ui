@@ -54,7 +54,7 @@ let boxTitleStyle =
   );
 
 let displayImg = (width: string, height, src: string, alt: string) => {
-  <img src alt width height />;
+  <img src alt width height style={ReactDOM.Style.make(~margin="5px", ())} />;
 };
 
 module Asset = {
