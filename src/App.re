@@ -320,6 +320,43 @@ module MainRouter = {
     </PageSection>;
 };
 
+module Login = {
+  module LoginButton = {
+    [@react.component]
+    let make = (~auth: Auth.t) => {
+      let (_state, dispatch) = auth;
+      // TODO: add login page here
+      <Button
+        variant=`Secondary onClick={_ => dispatch(Auth.Login("admin"))}>
+        {"Login" |> React.string}
+      </Button>;
+    };
+  };
+
+  module LogoutButton = {
+    [@react.component]
+    let make = (~auth: Auth.t) => {
+      let (_state, dispatch) = auth;
+      // TODO: add login page here
+      <Button onClick={_ => dispatch(Auth.Logout)}>
+        {"Logout" |> React.string}
+      </Button>;
+    };
+  };
+
+  module Header = {
+    [@react.component]
+    let make = (~auth: Auth.t) =>
+      <PageHeaderTools>
+        {switch (auth) {
+         | (Some({name}), _) =>
+           <> {"Welcome " ++ name |> React.string} <LogoutButton auth /> </>
+         | (None, _) => <LoginButton auth />
+         }}
+      </PageHeaderTools>;
+  };
+};
+
 module Main = (Fetcher: Dependencies.Fetcher) => {
   module Res = Resources.Hook(Fetcher);
   module Inf = Info.Hook(Fetcher);
@@ -341,7 +378,7 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
 
   module MainWithContext = {
     [@react.component]
-    let make = (~info: SF.Info.t) => {
+    let make = (~info: SF.Info.t, ~auth: Auth.t) => {
       let header =
         <PageHeader
           logo={getHeaderLogo(info)}
@@ -372,8 +409,8 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
 
   [@react.component]
   let make = () =>
-    switch (Inf.use()) {
-    | Inf.Loading => <p> {"Loading..." |> str} </p>
-    | Inf.Loaded(info) => <MainWithContext info />
+    switch (Inf.use(), Auth.Hook.use()) {
+    | (Inf.Loading, _auth) => <p> {"Loading..." |> str} </p>
+    | (Inf.Loaded(info), auth) => <MainWithContext info auth />
     };
 };
