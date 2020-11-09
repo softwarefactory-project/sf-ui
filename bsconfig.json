@@ -22,6 +22,7 @@
     "reason-react",
     "bs-fetch",
     "decco",
+    "@justgage/reason-cookie",
     "@softwarefactory-project/re-patternfly",
     "@softwarefactory-project/re-sf"
   ],

@@ -20,6 +20,11 @@ module StubFetch = {
   };
 };
 
+module StubCookieFetcher: SFCookie.CookieFetcher = {
+  let getRawCookie = () =>
+    "cid%3D11%3Buid%3Djohn%3Bvaliduntil%3D1606139056.416925"->Some;
+};
+
 // See https://github.com/reasonml/reason-react/issues/627
 [@bs.val]
 external toActualPromise: Js.Promise.t('a) => Js.Promise.t('a) =
@@ -53,4 +58,11 @@ describe("Basic test", () => {
       |> Belt.Option.isSome
     );
   });
+});
+
+describe("SFCookie test", () => {
+  test("can we extract cookie uid", () => {
+    module CauthCookie = SFCookie.AbstractCauthCookie(StubCookieFetcher);
+    expect(CauthCookie.getUser()) |> toBe(Some("john"));
+  })
 });

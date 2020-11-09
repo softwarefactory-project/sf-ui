@@ -12,6 +12,7 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
+    "@justgage/reason-cookie": "^0.1.2",
     "@patternfly/react-core": "^4.50.2",
     "@softwarefactory-project/re-patternfly": "../re-patternfly",
     "@softwarefactory-project/re-sf": "../re-sf",
