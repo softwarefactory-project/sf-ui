@@ -18,6 +18,10 @@ module StubFetch = {
     |> Js.Json.parseExn
     |> Js.Promise.resolve;
   };
+  let fetchWithInit = (url:string, requestInit: Fetch.requestInit) => {
+    Js.log("Stubing fetchWithInit: " ++ url);
+    Fetch.Response.redirect("test") |> Js.Promise.resolve;
+  }
 };
 
 module StubCookieFetcher: SFCookie.CookieFetcher = {

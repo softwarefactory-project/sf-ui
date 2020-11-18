@@ -328,7 +328,9 @@ module Login = {
         "auth_pubtkt",
         "cid%3D11%3Buid%3Dadmin%3Bvaliduntil%3D1606139056.416925",
       );
-      Auth.Login("admin");
+      Auth.CauthLogin(Auth.Password(
+        {username: "admin", password: "test"}
+        ));
     };
     [@react.component]
     let make = (~auth: Auth.t) => {
@@ -380,6 +382,7 @@ module Login = {
 module Main = (Fetcher: Dependencies.Fetcher) => {
   module Res = Resources.Hook(Fetcher);
   module Inf = Info.Hook(Fetcher);
+  module Auth' = Auth.Hook(Fetcher);
 
   let getHeaderLogo = (info: SF.Info.t) =>
     <Brand
@@ -425,7 +428,16 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
 
   [@react.component]
   let make = () => {
-    switch (Inf.use(), Auth.Hook.use()) {
+    // let state = Cauth'.use([("username", "fabien"), ("password", "test")]);
+    // switch (state) {
+    // | Loading => Js.log("cauth stil loading")
+    // | Loaded(auth_status) =>
+    //   switch (auth_status) {
+    //   | Ok => Js.log("Connection cauth ok")
+    //   | Error(err) => Js.log("Cauth error: " ++ err)
+    //   }
+    // };
+    switch (Inf.use(), Auth'.use()) {
     | (Inf.Loading, _auth) => <p> {"Loading..." |> str} </p>
     | (Inf.Loaded(info), auth) => <MainWithContext info auth />
     };
