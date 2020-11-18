@@ -258,24 +258,50 @@ module TenantCard = {
   };
 };
 
-module TenantList = {
-  [@react.component]
-  let make = (~tenants: list(SF.V2.Tenant.t)) =>
-    <Grid hasGutter=true>
-      {tenants->renderList(tenant => {
-         <GridItem key={tenant.name}> <TenantCard tenant /> </GridItem>
-       })}
-    </Grid>;
-};
-
 module WelcomePage = {
+  module TenantList = {
+    [@react.component]
+    let make = (~tenants: list(SF.V2.Tenant.t)) =>
+      <Grid hasGutter=true>
+        {tenants->renderList(tenant => {
+           <GridItem key={tenant.name}> <TenantCard tenant /> </GridItem>
+         })}
+      </Grid>;
+  };
+
+  module Menu = {
+    [@react.component]
+    let make = (~services: list(SF.Info.service)) => {
+      <Bullseye>
+        {services->renderList(service =>
+           <GridItem key={service.name} span=Column._1>
+             <Service.Logo name={service.name} link={service.path} />
+           </GridItem>
+         )}
+      </Bullseye>;
+    };
+  };
+
+  let splashLogo = (info: SF.Info.t) =>
+    <Bullseye>
+      <img
+        src={"data:image/png;base64," ++ info.splash_image_b64data}
+        width="250"
+        height="250"
+      />
+    </Bullseye>;
+
   [@react.component]
-  let make = (~resources: SF.V2.t) => {
-    <Grid hasGutter=true>
-      <GridItem offset=Column._1 span=Column._10>
-        <TenantList tenants={resources.tenants} />
-      </GridItem>
-    </Grid>;
+  let make = (~info: SF.Info.t, ~resources: SF.V2.t) => {
+    <>
+      {splashLogo(info)}
+      <Menu services={info.services} />
+      <Grid hasGutter=true>
+        <GridItem offset=Column._1 span=Column._10>
+          <TenantList tenants={resources.tenants} />
+        </GridItem>
+      </Grid>
+    </>;
   };
 };
 
@@ -295,85 +321,62 @@ module ProjectPage = {
   };
 };
 
-module Menu = {
-  [@react.component]
-  let make = (~services: list(SF.Info.service)) => {
-    <Bullseye>
-      {services->renderList(service =>
-         <GridItem key={service.name} span=Column._1>
-           <Service.Logo name={service.name} link={service.path} />
-         </GridItem>
-       )}
-    </Bullseye>;
-  };
-};
-
-module MainRouter = {
-  [@react.component]
-  let make = (~resources: SF.V2.t) =>
-    <PageSection isFilled=true>
-      {switch (ReasonReactRouter.useUrl().path) {
-       | [] => <WelcomePage resources />
-       | ["project", project_id] => <ProjectPage project_id resources />
-       | _ => <p> {"Not found" |> str} </p>
-       }}
-    </PageSection>;
-};
-
 module Main = (Fetcher: Dependencies.Fetcher) => {
   module Res = Resources.Hook(Fetcher);
   module Inf = Info.Hook(Fetcher);
+  module Auth' = Auth.Hook(Fetcher);
 
   let getHeaderLogo = (info: SF.Info.t) =>
     <Brand
       alt="SF"
       src={"data:image/png;base64," ++ info.header_logo_b64data}
+      onClick={_ => ReasonReactRouter.push("/")}
     />;
-
-  let splashLogo = (info: SF.Info.t) =>
-    <Bullseye>
-      <img
-        src={"data:image/png;base64," ++ info.splash_image_b64data}
-        width="250"
-        height="250"
-      />
-    </Bullseye>;
 
   module MainWithContext = {
     [@react.component]
-    let make = (~info: SF.Info.t) => {
+    let make = (~info: SF.Info.t, ~resources: SF.V2.t) => {
+      let auth = Auth'.use(~defaultBackend=Auth.Cauth);
       let header =
         <PageHeader
           logo={getHeaderLogo(info)}
           headerTools={
             <PageHeaderTools>
-              <PageHeaderToolsGroup>
-                <PageHeaderToolsItem>
-                  <Button variant=`Plain> <Icons.Cog /> </Button>
-                </PageHeaderToolsItem>
-                <PageHeaderToolsItem>
-                  <Button variant=`Plain> <Icons.Help /> </Button>
-                </PageHeaderToolsItem>
-              </PageHeaderToolsGroup>
-              <Avatar src=Asset.Logo.avatar alt="Avatar image" />
+              <PageHeaderToolsItem>
+                <Button variant=`Plain> <Icons.Help /> </Button>
+              </PageHeaderToolsItem>
+              <UserLogin.Header auth />
             </PageHeaderTools>
           }
         />;
+
       <Page header>
-        {splashLogo(info)}
-        <Menu services={info.services} />
-        {switch (Res.use("local")) {
-         | Res.Loading => <p> {"Loading resources..." |> str} </p>
-         | Res.Loaded(resources) => <MainRouter resources />
-         }}
+        <PageSection isFilled=true>
+          {switch (ReasonReactRouter.useUrl().path) {
+           | [] => <WelcomePage info resources />
+           | ["project", project_id] => <ProjectPage project_id resources />
+           | ["auth", "login"] => <UserLogin.Page info auth />
+           | _ => <p> {"Not found" |> str} </p>
+           }}
+        </PageSection>
       </Page>;
     };
   };
 
+  module MainWithInfo = {
+    [@react.component]
+    let make = (~info: SF.Info.t) =>
+      switch (Res.use("local")) {
+      | Res.Loading => <p> {"Loading resources..." |> str} </p>
+      | Res.Loaded(resources) => <MainWithContext info resources />
+      };
+  };
+
   [@react.component]
-  let make = () =>
+  let make = () => {
     switch (Inf.use()) {
     | Inf.Loading => <p> {"Loading..." |> str} </p>
-    | Inf.Loaded(info) => <MainWithContext info />
+    | Inf.Loaded(info) => <MainWithInfo info />
     };
+  };
 };

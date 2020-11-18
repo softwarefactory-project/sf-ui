@@ -1,2 +1,5 @@
 // A module type to define the `fetch` capability
-module type Fetcher = {let fetch: string => Js.Promise.t(Js.Json.t);};
+module type Fetcher = {
+  let fetch: string => Js.Promise.t(Js.Json.t);
+  let post: (string, Js.Json.t) => Js.Promise.t(Fetch.response);
+};

@@ -18,6 +18,15 @@ module StubFetch = {
     |> Js.Json.parseExn
     |> Js.Promise.resolve;
   };
+  let post = (url: string, _body: Js.Json.t) => {
+    Js.log("Stubing fetchWithInit: " ++ url);
+    Fetch.Response.redirect("test") |> Js.Promise.resolve;
+  };
+};
+
+module StubCookieFetcher: SFCookie.CookieFetcher = {
+  let getRawCookie = () =>
+    "cid%3D11%3Buid%3Djohn%3Bvaliduntil%3D1606139056.416925"->Some;
 };
 
 // See https://github.com/reasonml/reason-react/issues/627
@@ -53,4 +62,11 @@ describe("Basic test", () => {
       |> Belt.Option.isSome
     );
   });
+});
+
+describe("SFCookie test", () => {
+  test("can we extract cookie uid", () => {
+    module CauthCookie = SFCookie.AbstractCauthCookie(StubCookieFetcher);
+    expect(CauthCookie.getUser()) |> toBe(Some("john"));
+  })
 });
