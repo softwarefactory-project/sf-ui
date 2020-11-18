@@ -1,6 +1,7 @@
 // A hook to manage authentication
+
 type action =
-  | Login(string)
+  | Login
   | Logout;
 
 type user = {name: string};
@@ -12,7 +13,9 @@ type t = (state, action => unit);
 module Hook = {
   let readCookieAndSetUser = (): state => {
     switch (SFCookie.CauthCookie.getUser()) {
-    | Some(uid) => {name: uid}->Some
+    | Some(uid) =>
+      Js.log("Login: " ++ uid);
+      {name: uid}->Some;
     | None => None
     };
   };
@@ -20,14 +23,7 @@ module Hook = {
     React.useReducer(
       (_state, action) =>
         switch (action) {
-        | Login(name) =>
-          Js.log("Login " ++ name);
-          // Ensure cookie is set
-          let maybeUser = readCookieAndSetUser();
-          switch (maybeUser) {
-          | Some(user) => user.name == name ? maybeUser : None
-          | None => None
-          };
+        | Login => readCookieAndSetUser()
         | Logout =>
           Js.log("Logout");
           // remove cookie

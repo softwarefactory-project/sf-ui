@@ -328,13 +328,22 @@ module Login = {
         "auth_pubtkt",
         "cid%3D11%3Buid%3Dadmin%3Bvaliduntil%3D1606139056.416925",
       );
-      Auth.Login("admin");
+      Auth.Login;
     };
     [@react.component]
-    let make = (~auth: Auth.t) => {
+    let make = (~auth: Auth.t, ~cauth_effect) => {
       let (_state, dispatch) = auth;
       // TODO: add login page here
-      <Button variant=`Secondary onClick={_ => dispatch(fakeLogin())}>
+      <Button
+        variant=`Secondary
+        onClick={_ => {
+          let params =
+            Cauth.createParams(
+              Cauth.Password({username: "admin", password: "test"}),
+            );
+          let state = cauth_effect(params);
+          dispatch(fakeLogin());
+        }}>
         {"Login" |> React.string}
       </Button>;
     };
@@ -353,7 +362,7 @@ module Login = {
 
   module Header = {
     [@react.component]
-    let make = (~auth: Auth.t) => {
+    let make = (~auth: Auth.t, ~cauth_effect) => {
       <PageHeaderToolsGroup>
         {switch (auth) {
          | (Some({name}), _) =>
@@ -370,7 +379,7 @@ module Login = {
                </PageHeaderToolsItem>
              </PageHeaderToolsGroup>
            </>
-         | (None, _) => <LoginButton auth />
+         | (None, _) => <LoginButton auth cauth_effect />
          }}
       </PageHeaderToolsGroup>;
     };
@@ -380,6 +389,7 @@ module Login = {
 module Main = (Fetcher: Dependencies.Fetcher) => {
   module Res = Resources.Hook(Fetcher);
   module Inf = Info.Hook(Fetcher);
+  module Cauth = Cauth.Hook(Fetcher);
 
   let getHeaderLogo = (info: SF.Info.t) =>
     <Brand
@@ -404,7 +414,7 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
           logo={getHeaderLogo(info)}
           headerTools={
             <PageHeaderTools>
-              <Login.Header auth />
+              <Login.Header auth cauth_effect=Cauth.use />
               <PageHeaderToolsItem>
                 <Button variant=`Plain> <Icons.Help /> </Button>
               </PageHeaderToolsItem>

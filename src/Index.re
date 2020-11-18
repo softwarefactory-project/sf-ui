@@ -3,6 +3,9 @@ module BsFetch = {
   let fetch = url => {
     Fetch.fetch(url) |> Js.Promise.then_(Fetch.Response.json);
   };
+  let fetchWithInit = (url, requestInit: Fetch.requestInit) => {
+    Fetch.fetchWithInit(url, requestInit);
+  };
 };
 
 module RealApp = App.Main(BsFetch);
