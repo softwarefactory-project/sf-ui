@@ -1,7 +1,16 @@
 // A hook to manage authentication
+
 type action =
-  | Login(string)
-  | Logout;
+  | Login(loginInfos)
+  | Logout
+and backend =
+  | Cauth
+  | Keycloak
+and loginInfos =
+  | CauthLogin(Cauth.cauthBackend)
+and loginStatus =
+  | Unknown
+  | CauthStatus(Cauth.state);
 
 type user = {name: string};
 
@@ -9,32 +18,45 @@ type state = option(user);
 
 type t = (state, action => unit);
 
-module Hook = {
+module Hook = (Fetcher: Dependencies.Fetcher) => {
+  module Cauth = Cauth.Hook(Fetcher);
+
   let readCookieAndSetUser = (): state => {
     switch (SFCookie.CauthCookie.getUser()) {
-    | Some(uid) => {name: uid}->Some
+    | Some(uid) =>
+      Js.log("Got login from cookie: " ++ uid);
+      {name: uid}->Some;
     | None => None
     };
   };
-  let use = (): t =>
-    React.useReducer(
-      (_state, action) =>
-        switch (action) {
-        | Login(name) =>
-          Js.log("Login " ++ name);
-          // Ensure cookie is set
-          let maybeUser = readCookieAndSetUser();
-          switch (maybeUser) {
-          | Some(user) => user.name == name ? maybeUser : None
-          | None => None
-          };
-        | Logout =>
-          Js.log("Logout");
-          // remove cookie
-          SFCookie.CauthCookie.remove();
-          None;
-        },
-      // Validate cookie and set default user
-      readCookieAndSetUser(),
-    );
+  let use = (~defaultBackend: backend): t => {
+    let (authBackend, setAuthBackend) = React.useState(_ => defaultBackend);
+    let (cauthState, cauthAuthenticate) = Cauth.use();
+    Js.log2("Cauth state is", cauthState);
+    let (loginState, authDispatch) =
+      React.useReducer(
+        (_state, action) =>
+          switch (action) {
+          | Login(loginInfos) =>
+            switch (loginInfos) {
+            | CauthLogin(cauthInfos) =>
+              setAuthBackend(_ => Cauth);
+              cauthAuthenticate(cauthInfos);
+              CauthStatus(cauthState);
+            }
+          | Logout =>
+            Js.log("Logout");
+            // remove cookie
+            SFCookie.CauthCookie.remove();
+            Unknown;
+          },
+        Unknown,
+      );
+    let authState =
+      switch (authBackend) {
+      | Cauth => readCookieAndSetUser()
+      | Keycloak => None
+      };
+    (authState, authDispatch);
+  };
 };

@@ -323,18 +323,28 @@ module MainRouter = {
 module Login = {
   module LoginButton = {
     let fakeLogin = () => {
-      open JustgageReasonCookie;
-      Cookie.setString(
-        "auth_pubtkt",
-        "cid%3D11%3Buid%3Dadmin%3Bvaliduntil%3D1606139056.416925",
+      JustgageReasonCookie.(
+        Cookie.setString(
+          "auth_pubtkt",
+          "cid%3D11%3Buid%3Dadmin%3Bvaliduntil%3D1606139056.416925",
+        )
       );
-      Auth.Login("admin");
     };
     [@react.component]
     let make = (~auth: Auth.t) => {
-      let (_state, dispatch) = auth;
+      let (state, dispatch) = auth;
+      Js.log2("Auth state is:", state);
       // TODO: add login page here
-      <Button variant=`Secondary onClick={_ => dispatch(fakeLogin())}>
+      <Button
+        variant=`Secondary
+        onClick={_ => {
+          dispatch(
+            Cauth.Password({username: "admin", password: "test"})
+            ->Auth.CauthLogin
+            ->Auth.Login,
+          );
+          fakeLogin();
+        }}>
         {"Login" |> React.string}
       </Button>;
     };
@@ -380,6 +390,7 @@ module Login = {
 module Main = (Fetcher: Dependencies.Fetcher) => {
   module Res = Resources.Hook(Fetcher);
   module Inf = Info.Hook(Fetcher);
+  module Auth' = Auth.Hook(Fetcher);
 
   let getHeaderLogo = (info: SF.Info.t) =>
     <Brand
@@ -399,6 +410,7 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
   module MainWithContext = {
     [@react.component]
     let make = (~info: SF.Info.t, ~auth: Auth.t) => {
+      // let cauth_effect = Cauth.use();
       let header =
         <PageHeader
           logo={getHeaderLogo(info)}
@@ -425,7 +437,7 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
 
   [@react.component]
   let make = () => {
-    switch (Inf.use(), Auth.Hook.use()) {
+    switch (Inf.use(), Auth'.use(~defaultBackend=Auth.Cauth)) {
     | (Inf.Loading, _auth) => <p> {"Loading..." |> str} </p>
     | (Inf.Loaded(info), auth) => <MainWithContext info auth />
     };
