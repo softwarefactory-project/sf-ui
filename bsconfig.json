@@ -27,6 +27,7 @@
     "@softwarefactory-project/re-sf"
   ],
   "bs-dev-dependencies": ["@glennsl/bs-jest"],
+  "ppx-flags": ["decco/ppx"],
   "namespace": "SFUI",
   "refmt": 3
 }

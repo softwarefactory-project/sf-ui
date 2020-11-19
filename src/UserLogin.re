@@ -106,7 +106,11 @@ module Header = {
                <p> {("Welcome " ++ name)->React.string} </p>
              </PageHeaderToolsItem>
              <PageHeaderToolsItem>
-               <Button variant=`Plain> <Icons.Cog /> </Button>
+               <Button
+                 variant=`Plain
+                 onClick={_ => ReasonReactRouter.push("/auth/settings")}>
+                 <Icons.Cog />
+               </Button>
              </PageHeaderToolsItem>
              <PageHeaderToolsItem>
                <Button

@@ -325,6 +325,7 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
   module Res = Resources.Hook(Fetcher);
   module Inf = Info.Hook(Fetcher);
   module Auth' = Auth.Hook(Fetcher);
+  module Managesf' = Managesf.Hook(Fetcher);
 
   let getHeaderLogo = (info: SF.Info.t) =>
     <Brand
@@ -356,6 +357,8 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
            | [] => <WelcomePage info resources />
            | ["project", project_id] => <ProjectPage project_id resources />
            | ["auth", "login"] => <UserLogin.Page info auth />
+           | ["auth", "settings"] =>
+             <UserSettings.Page managesf=Managesf'.use />
            | _ => <p> {"Not found" |> str} </p>
            }}
         </PageSection>
