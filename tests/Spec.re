@@ -16,6 +16,7 @@ module StubFetch = {
       }
     )
     |> Js.Json.parseExn
+    |> (x => Some(x))
     |> Js.Promise.resolve;
   };
   let post = (url: string, _body: Js.Json.t) => {

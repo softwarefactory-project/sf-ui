@@ -2,7 +2,7 @@ open Patternfly;
 
 module SettingForm = {
   [@react.component]
-  let make = (~user: Managesf.user) => {
+  let make = (~user: Api.UserSettings.user) => {
     let (idpSync, idpSyncChange) = React.useState(_ => user.idp_sync);
     <Form>
       <h1> "User information"->React.string </h1>
@@ -33,7 +33,7 @@ module SettingForm = {
 
 module ApiForm = {
   [@react.component]
-  let make = (~apiKey: Managesf.apiKey) => {
+  let make = (~apiKey: Api.UserSettings.apiKey) => {
     <Form>
       <h1> "API Key"->React.string </h1>
       <FormGroup label={"Key"->React.string} fieldId="key">
@@ -50,14 +50,14 @@ module ApiForm = {
 
 module Page = {
   [@react.component]
-  let make = (~managesf: Managesf.hook) => {
+  let make = (~userSettings: Api.UserSettings.hook) => {
     // TODO: add auth prop to check if user is actually logged-in
-    let state = managesf();
+    let state = userSettings();
     switch (state) {
-    | (_, Managesf.KeyLoading)
-    | (Managesf.Loading, _) => <p> "Loading..."->React.string </p>
-    | (Managesf.Loaded(user), Managesf.KeyLoaded(apiKey)) =>
+    | RemoteData.Loading => <p> "Loading..."->React.string </p>
+    | RemoteData.Success((user, apiKey)) =>
       <> <SettingForm user /> <br /> <ApiForm apiKey /> </>
+    | RemoteData.Failure(title) => <Alert variant=`Danger title />
     };
   };
 };

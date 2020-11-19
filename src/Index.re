@@ -1,7 +1,13 @@
 // A Fetcher implementation using `bs-fetch`
 module BsFetch = {
-  let fetch = url => {
-    Fetch.fetch(url) |> Js.Promise.then_(Fetch.Response.json);
+  let fetch = (url: string): Js.Promise.t(option(Js.Json.t)) => {
+    Fetch.fetch(url)
+    |> Js.Promise.then_(Fetch.Response.json)
+    |> Js.Promise.then_(v => v->Some->Js.Promise.resolve)
+    |> Js.Promise.catch(e => {
+         Js.log(e);
+         None->Js.Promise.resolve;
+       });
   };
   let post = (url, body: Js.Json.t) => {
     let req =

@@ -3,6 +3,8 @@ open Patternfly;
 module Page = {
   [@react.component]
   let make = (~info: SF.Info.t, ~auth: Auth.t) => {
+    // TODO: add (and use) idp to info type
+    ignore(info);
     let (_authState, authDispatch) = auth;
     let (useLocalAccount, toggleLocalAccount) = React.useState(_ => false);
 

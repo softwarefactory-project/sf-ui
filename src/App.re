@@ -322,10 +322,10 @@ module ProjectPage = {
 };
 
 module Main = (Fetcher: Dependencies.Fetcher) => {
-  module Res = Resources.Hook(Fetcher);
-  module Inf = Info.Hook(Fetcher);
   module Auth' = Auth.Hook(Fetcher);
-  module Managesf' = Managesf.Hook(Fetcher);
+  module Resources' = Api.Resources.Hook(Fetcher);
+  module Info' = Api.Info.Hook(Fetcher);
+  module UserSettings' = Api.UserSettings.Hook(Fetcher);
 
   let getHeaderLogo = (info: SF.Info.t) =>
     <Brand
@@ -358,7 +358,7 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
            | ["project", project_id] => <ProjectPage project_id resources />
            | ["auth", "login"] => <UserLogin.Page info auth />
            | ["auth", "settings"] =>
-             <UserSettings.Page managesf=Managesf'.use />
+             <UserSettings.Page userSettings=UserSettings'.use />
            | _ => <p> {"Not found" |> str} </p>
            }}
         </PageSection>
@@ -369,17 +369,19 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
   module MainWithInfo = {
     [@react.component]
     let make = (~info: SF.Info.t) =>
-      switch (Res.use("local")) {
-      | Res.Loading => <p> {"Loading resources..." |> str} </p>
-      | Res.Loaded(resources) => <MainWithContext info resources />
+      switch (Resources'.use("local")) {
+      | RemoteData.Loading => <p> {"Loading resources..." |> str} </p>
+      | RemoteData.Success(resources) => <MainWithContext info resources />
+      | RemoteData.Failure(title) => <Alert variant=`Danger title />
       };
   };
 
   [@react.component]
   let make = () => {
-    switch (Inf.use()) {
-    | Inf.Loading => <p> {"Loading..." |> str} </p>
-    | Inf.Loaded(info) => <MainWithInfo info />
+    switch (Info'.use()) {
+    | RemoteData.Loading => <p> {"Loading..." |> str} </p>
+    | RemoteData.Success(info) => <MainWithInfo info />
+    | RemoteData.Failure(title) => <Alert variant=`Danger title />
     };
   };
 };
