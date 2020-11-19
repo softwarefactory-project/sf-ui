@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "17329f1c_4003c1bc",
+        "filename": "src/Managesf.re",
+        "patchSetId": 1
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 7
+      },
+      "writtenOn": "2020-11-19T02:12:04Z",
+      "side": 1,
+      "message": "It seems like we have a pattern here, perhaps a higher order hook could be useful?",
+      "revId": "a85d7c4a32a1846c31a08670aed70b02533bdff5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
