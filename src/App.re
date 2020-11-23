@@ -358,7 +358,11 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
            | ["project", project_id] => <ProjectPage project_id resources />
            | ["auth", "login"] => <UserLogin.Page info auth />
            | ["auth", "settings"] =>
-             <UserSettings.Page userSettings=UserSettings'.use />
+             <UserSettings.Page
+               userSettings=UserSettings'.use
+               userSettingsPost=UserSettings'.use_save_us
+               apiKeyPost=UserSettings'.use_save_apiKey
+             />
            | _ => <p> {"Not found" |> str} </p>
            }}
         </PageSection>
