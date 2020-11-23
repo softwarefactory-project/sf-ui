@@ -23,6 +23,13 @@ module StubFetch = {
     Js.log("Stubing fetchWithInit: " ++ url);
     Fetch.Response.redirect("test") |> Js.Promise.resolve;
   };
+  let post2 = (url: string, _body: Js.Json.t) => {
+    Js.log("Stubing fetchWithInit: " ++ url);
+    ("fake" |> Js.Json.string)->Some |> Js.Promise.resolve;
+  };
+  let put = post2;
+  let delete = (_url: string) =>
+    Fetch.Response.redirect("test") |> Js.Promise.resolve;
 };
 
 module StubCookieFetcher: SFCookie.CookieFetcher = {
