@@ -1,31 +1,77 @@
 open Patternfly;
 
 module SettingForm = {
+  // let saveForm = (username, fullname, email, idp_sync) => {
+  //   let user: Api.UserSettings.user = {username, fullname, email, idp_sync};
+  //   Js.log("Post user setting data");
+  //   // Api.UserSettings.
+  // };
+
   [@react.component]
-  let make = (~user: Api.UserSettings.user) => {
-    let (idpSync, idpSyncChange) = React.useState(_ => user.idp_sync);
+  let make =
+      (
+        ~user: Api.UserSettings.user,
+        ~userSettingsPost: Api.UserSettings.saveHook,
+      ) => {
+    let (idpSync, setIdpSync) = React.useState(_ => user.idp_sync);
+    let (fullname, setFullname) = React.useState(() => user.fullname);
+    let (email, seteMail) = React.useState(() => user.email);
+    let (state, postForm) = userSettingsPost();
+    switch (state) {
+    | Loading => Js.log("In loading")
+    | Success(result) => Js.log(result)
+    | Failure(err) => Js.log(err)
+    | NotAsked => ()
+    };
     <Form>
       <h1> "User information"->React.string </h1>
       <FormGroup label={"Username"->React.string} fieldId="username">
         <TextInput value={user.username} isReadOnly=true id="username" />
       </FormGroup>
       <FormGroup label={"Full name"->React.string} fieldId="fullName">
-        <TextInput value={user.fullname} isReadOnly=idpSync id="fullName" />
+        <TextInput
+          value=fullname
+          isReadOnly=idpSync
+          id="fullName"
+          onChange={(value, _) => {setFullname(_ => value)}}
+        />
       </FormGroup>
       <FormGroup label={"eMail"->React.string} fieldId="eMail">
-        <TextInput value={user.email} isReadOnly=idpSync id="eMail" />
+        <TextInput
+          value=email
+          isReadOnly=idpSync
+          id="eMail"
+          onChange={(value, _) => {seteMail(_ => value)}}
+        />
       </FormGroup>
       <FormGroup
         label={"Manage Identity Provider"->React.string} fieldId="idp">
         <Checkbox
           label="Synchronize user data with the Identity Provider"
           isChecked=idpSync
-          onChange={(_, _) => idpSyncChange(_ => !idpSync)}
+          onChange={(_, _) => setIdpSync(_ => !idpSync)}
           id="idpSync"
         />
       </FormGroup>
       <ActionGroup>
-        <Button variant=`Primary> "Save"->React.string </Button>
+        <Button
+          variant=`Primary
+          onClick={_ => {
+            let user: Api.UserSettings.user = {
+              username: user.username,
+              fullname,
+              email,
+              idp_sync: idpSync,
+            };
+            postForm(
+              Put({
+                body: Api.UserSettings.(user_encode(user)),
+                qs: [("username", user.username)],
+              }),
+            );
+          }}>
+          "Save"->React.string
+        </Button>
       </ActionGroup>
     </Form>;
   };
@@ -50,13 +96,17 @@ module ApiForm = {
 
 module Page = {
   [@react.component]
-  let make = (~userSettings: Api.UserSettings.hook) => {
+  let make =
+      (
+        ~userSettings: Api.UserSettings.useHook,
+        ~userSettingsPost: Api.UserSettings.saveHook,
+      ) => {
     // TODO: add auth prop to check if user is actually logged-in
     let state = userSettings();
     switch (state) {
     | RemoteData.Loading => <p> "Loading..."->React.string </p>
     | RemoteData.Success((user, apiKey)) =>
-      <> <SettingForm user /> <br /> <ApiForm apiKey /> </>
+      <> <SettingForm user userSettingsPost /> <br /> <ApiForm apiKey /> </>
     | RemoteData.Failure(title) => <Alert variant=`Danger title />
     };
   };
