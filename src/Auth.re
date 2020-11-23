@@ -13,9 +13,9 @@ and user = {name: string}
 and backend =
   | Cauth
   | Keycloak
-and loginStatus =
+and loginStatus('a) =
   | Unknown
-  | CauthStatus(Cauth.state);
+  | CauthStatus(Cauth.state('a));
 
 module Hook = (Fetcher: Dependencies.Fetcher) => {
   module Cauth' = Cauth.Hook(Fetcher);

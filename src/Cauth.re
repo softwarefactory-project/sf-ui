@@ -1,14 +1,12 @@
 // A hook to authenticate with Cauth
 
 // The hook returns this type t:
-type t = (state, action => unit)
-and state =
+type t('a) = (state('a), action => unit)
+and state('a) =
   | Loading
-  | Loaded(auth)
+  | Loaded(auth('a))
   | Unloaded
-and auth =
-  | Ok
-  | Error(string)
+and auth('a) = Belt.Result.t('a, string)
 and action =
   | Login(backend)
   | Logout
@@ -58,23 +56,10 @@ let fakeLogin = (backend: backend) => {
   ReasonReactRouter.push("/");
 };
 
-let responseToState = resp =>
-  Fetch.Response.ok(resp)
-    ? Loaded(Ok)
-    : Loaded(
-        Error(
-          "Code: "
-          ++ (Fetch.Response.status(resp) |> string_of_int)
-          ++ " ("
-          ++ Fetch.Response.statusText(resp)
-          ++ ")",
-        ),
-      );
-
 let getUser = SFCookie.CauthCookie.getUser;
 
 module Hook = (Fetcher: Dependencies.Fetcher) => {
-  let use = (): t => {
+  let use = (): t('a) => {
     // This hook uses a single state
     let (state, updateState) = React.useState(() => Loading);
     let setState = s => updateState(_ => s);
@@ -88,10 +73,10 @@ module Hook = (Fetcher: Dependencies.Fetcher) => {
           Js.Dict.map(toJsonString, createParams(backend)->Js.Dict.fromList)
           ->Js.Json.object_;
         Js.Promise.(
-          Fetcher.post("/auth/login", body)
-          |> then_(resp => resp |> responseToState |> setState |> resolve)
-          |> ignore
-        );
+          Fetcher.post("/auth/login", body->Some)
+          |> then_(result => result->Loaded->setState->resolve)
+        )
+        |> ignore;
         // TODO: remove fakeLogin
         fakeLogin(backend);
       | Logout =>
