@@ -21,10 +21,15 @@ module Hook = (Fetcher: Dependencies.Fetcher) => {
   module Cauth' = Cauth.Hook(Fetcher);
 
   let use = (~defaultBackend: backend): t => {
-    // First we check what is the current backend:
-    let (authBackend, setAuthBackend) = React.useState(_ => defaultBackend);
     // Then we initialize the backends hook:
     let (cauthState, cauthDispatch) = Cauth'.use();
+    // First we check what is the current backend:
+    let (authBackend, setAuthBackend) =
+      React.useState(_ => {
+        // Ensure we are logged-out on first use.
+        cauthDispatch(Cauth.Logout);
+        defaultBackend;
+      });
     // And we create a reducer to manage action dispatch:
     let (_loginState, authDispatch) =
       React.useReducer(
