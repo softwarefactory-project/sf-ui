@@ -1,94 +1,22 @@
-module UserSettings = {
-  [@decco]
-  type user = {
-    username: string,
-    fullname: string,
-    email: string,
-    idp_sync: bool,
+// The SF remote api hooks on top of RemoteApi
+
+type resources_hook_t = (RemoteApi.state_t(SF.V2.t), unit => unit);
+
+module Hook = (Fetcher: Dependencies.Fetcher) => {
+  open RemoteApi;
+  module RemoteApi = RemoteApi.API(Fetcher);
+
+  // Info is a simple get hook
+  module Info = {
+    let use = () =>
+      RemoteApi.Hook.useAutoGet("/api/info.json", SF.Info.decode);
   };
-  [@decco]
-  type apiKey = {api_key: string};
 
-  type t = (user, apiKey);
-  type useHook = unit => RemoteData.t(t);
-  type saveHook = unit => PostRemoteData.t(user);
-
-  type apiKeyState =
-    | NotAsked
-    | Loading
-    | Success(apiKey)
-    | Failure(string);
-  type apiKeyAction =
-    | Regenerate(string);
-
-  type saveApiKey = (apiKeyState, apiKeyAction => unit);
-  type saveApiKeyHook = unit => saveApiKey;
-
-  module Hook = (Fetcher: Dependencies.Fetcher) => {
-    module RemoteData' = RemoteData.Hook(Fetcher);
-    module PostRemoteData' = PostRemoteData.Hook(Fetcher);
-    // Todo: record previously fetched user info
-    let use = (): RemoteData.t(t) =>
-      RemoteData.mzip(
-        RemoteData'.use("/api/user.json", user_decode),
-        RemoteData'.use("/api/apikey.json", apiKey_decode),
-      );
-    let use_save_us = (): PostRemoteData.t(user) => {
-      PostRemoteData'.use("/manage/services_users", user_decode->Some);
-    };
-    let resultToState = (result, setState) =>
-      switch (result) {
-      | Ok(maybeJson) =>
-        switch (maybeJson) {
-        | Some(json) =>
-          switch (json |> apiKey_decode) {
-          | Ok(decoded) => setState(_ => Success(decoded))
-          | Error(_) => setState(_ => Failure("Unable to decode Json"))
-          }
-        | None => setState(_ => Failure("Missing Json data"))
-        }
-      | Error(e) => setState(_ => Failure(e))
-      };
-
-    let use_save_apiKey = (): saveApiKey => {
-      let (state, setState) = React.useState(() => NotAsked);
-      let call = (action: apiKeyAction): unit => {
-        setState(_ => Loading);
-        switch (action) {
-        | Regenerate(username) =>
-          let url =
-            PostRemoteData.(
-              buildUrl("/auth/apikey", [("username", username)])
-            );
-          Js.Promise.(
-            Fetcher.delete(url)
-            |> then_(result =>
-                 switch (result) {
-                 | Ok(_) =>
-                   Fetcher.post(url, None)
-                   |> then_(x => x->resultToState(setState)->resolve)
-                 | Error(e) => setState(_ => Failure(e)) |> resolve
-                 }
-               )
-          )
-          |> ignore;
-        };
-      };
-      (state, call);
-    };
-  };
-};
-
-module Resources = {
-  type t = SF.V2.t
-  and hook = string => RemoteData.t(t);
-
-  // A hook to fetch resources
-  module Hook = (Fetcher: Dependencies.Fetcher) => {
-    module RemoteData' = RemoteData.Hook(Fetcher);
-
-    let use = (default_tenant: string) =>
-      RemoteData'.use("/api/resources.json", json =>
+  // Resource is a simple get hook with a customized decoder based on
+  // the default tenant name (known from info endpoint)
+  module Resources = {
+    let use = (default_tenant: string): resources_hook_t =>
+      RemoteApi.Hook.useGet("/api/resources.json", json =>
         json
         ->SF.Resources.decode
         ->Belt.Result.flatMap(resv1 =>
@@ -96,16 +24,106 @@ module Resources = {
           )
       );
   };
-};
 
-module Info = {
-  type t = SF.Info.t
-  and hook = unit => RemoteData.t(t);
+  // UserSettings is a simple get/post hook
+  module UserSettings = {
+    [@decco]
+    type user = {
+      username: string,
+      fullname: string,
+      email: string,
+      idp_sync: bool,
+    };
 
-  // A hook to fetch infos
-  module Hook = (Fetcher: Dependencies.Fetcher) => {
-    module RemoteData' = RemoteData.Hook(Fetcher);
+    let use = () =>
+      RemoteApi.Hook.useSimplePost("/api/user.json", user_decode);
+  };
 
-    let use = () => RemoteData'.use("/api/info.json", SF.Info.decode);
+  // ApiKey is a hook that manage two states: get and delete
+  module ApiKey = {
+    [@decco]
+    type apiKey = {api_key: string};
+
+    // Hook internal state
+    type state = {
+      api_key: state_t(apiKey),
+      delete_goal: string,
+      delete_request: state_t(unit),
+    };
+    let initialState = {
+      api_key: RemoteData.NotAsked,
+      delete_request: RemoteData.NotAsked,
+      delete_goal: "",
+    };
+
+    // Hook internal state update action
+    type action =
+      // Get the key
+      | ApiKeyRequest(action_t(apiKey))
+      // Delete the key
+      | ApiKeyRegenerate(action_t(unit))
+      | ApiKeyDelete(action_t(unit));
+
+    let goal =
+      fun
+      | ApiKeyRegenerate(_) => "Regenerate"
+      | ApiKeyDelete(_) => "Delete"
+      | ApiKeyRequest(_) => "Request";
+
+    // Hook internal reducer to manage state update
+    let reducer = (state: state, action: action): state =>
+      switch (action) {
+      | ApiKeyRequest(r) => {
+          ...state,
+          api_key: state.api_key->updateRemoteData(r),
+        }
+      | ApiKeyRegenerate(r)
+      | ApiKeyDelete(r) => {
+          ...state,
+          delete_goal: action->goal,
+          delete_request: state.delete_request->updateRemoteData(r),
+        }
+      };
+
+    // Hook internal functions to manage the key
+    let get = dispatch =>
+      RemoteApi.get("/api/apikey.json", apiKey_decode, r =>
+        r->ApiKeyRequest->dispatch
+      );
+    let delete = (dispatch, intent) =>
+      RemoteApi.delete("/api/apikey.json", r => r->intent->dispatch);
+    let create = dispatch =>
+      RemoteApi.post("/api/apikey.json", None, apiKey_decode, r =>
+        r->ApiKeyRequest->dispatch
+      );
+
+    // Component actions:
+    type callbackAction =
+      | Delete
+      | Regenerate;
+
+    let use = () => {
+      // Create state store
+      let (state, dispatch) = React.useReducer(reducer, initialState);
+
+      // Fetch initial key
+      React.useEffect0(
+        getWhenNeeded(state.api_key, () => get(dispatch)->ignore),
+      );
+
+      // The function the component calls to perform actions
+      let callback = (cbAction: callbackAction) =>
+        (
+          switch (cbAction) {
+          | Delete => delete(dispatch, x => x->ApiKeyDelete)->ignore
+          | Regenerate =>
+            delete(dispatch, x => x->ApiKeyRegenerate)
+            ->chainCall(() => create(dispatch))
+            ->ignore
+          }
+        )
+        ->ignore;
+      (state, callback);
+    };
   };
 };

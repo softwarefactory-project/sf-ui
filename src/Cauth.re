@@ -1,12 +1,8 @@
 // A hook to authenticate with Cauth
 
 // The hook returns this type t:
-type t('a) = (state('a), action => unit)
-and state('a) =
-  | Loading
-  | Loaded(auth('a))
-  | Unloaded
-and auth('a) = Belt.Result.t('a, string)
+type t = (state, action => unit)
+and state = RemoteApi.state_t(unit)
 and action =
   | Login(backend)
   | Logout
@@ -95,27 +91,28 @@ let fakeLogin = (backend: backend) => {
 let getUser = SFCookie.CauthCookie.getUser;
 
 module Hook = (Fetcher: Dependencies.Fetcher) => {
-  let use = (): t('a) => {
+  open RemoteApi;
+  module RemoteApi = RemoteApi.API(Fetcher);
+
+  let use = (): t => {
     // This hook uses a single state
-    let (state, updateState) = React.useState(() => Loading);
-    let setState = s => updateState(_ => s);
+    let (state, setState) = React.useState(() => RemoteData.NotAsked);
+    let set_state = s => setState(_ => s);
     // And returns this convenient function to trigger state update
-    let authenticate = (action: action) => {
+    let authenticate = (action: action): unit => {
       switch (action) {
       | Login(backend) =>
-        setState(Loading);
-        Js.Promise.(
-          Fetcher.post(
-            "/auth/login",
-            createParams(backend)->cauthPost_encode->Some,
-          )
-          |> then_(result => {result->Loaded->setState->resolve})
+        // Here we just post, and we'll be redirected if the request succeed
+        RemoteApi.justPost(
+          "/auth/login", createParams(backend)->cauthPost_encode, r =>
+          state->updateRemoteData(r)->set_state
         )
-        |> ignore;
+        ->ignore
+
       // fakeLogin(backend);
       | Logout =>
         SFCookie.CauthCookie.remove();
-        setState(Unloaded);
+        RemoteData.NotAsked->set_state;
       };
     };
     (state, authenticate);
