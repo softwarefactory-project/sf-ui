@@ -60,6 +60,7 @@ module BsFetch = {
       Fetch.HeadersInit.make({
         "Accept": "*",
         "Content-Type": "application/json",
+        //        "Upgrade-Insecure-Requests": "1",
       });
     let req =
       switch (body) {
@@ -68,7 +69,8 @@ module BsFetch = {
         Fetch.RequestInit.make(
           ~method_=verb,
           ~body=json->Js.Json.stringify->Fetch.BodyInit.make,
-          ~redirect=Follow,
+          //          ~redirect=Follow,
+          //          ~mode=NoCORS,
           ~headers,
           (),
         )
