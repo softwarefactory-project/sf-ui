@@ -323,9 +323,8 @@ module ProjectPage = {
 
 module Main = (Fetcher: Dependencies.Fetcher) => {
   module Auth' = Auth.Hook(Fetcher);
-  module Resources' = Api.Resources.Hook(Fetcher);
-  module Info' = Api.Info.Hook(Fetcher);
-  module UserSettings' = Api.UserSettings.Hook(Fetcher);
+  module Hook = Api.Hook(Fetcher);
+  module UserSettingsPage = UserSettings.Page(Fetcher);
 
   let getHeaderLogo = (info: SF.Info.t) =>
     <Brand
@@ -357,12 +356,7 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
            | [] => <WelcomePage info resources />
            | ["project", project_id] => <ProjectPage project_id resources />
            | ["auth", "login"] => <UserLogin.Page info auth />
-           | ["auth", "settings"] =>
-             <UserSettings.Page
-               userSettings=UserSettings'.use
-               userSettingsPost=UserSettings'.use_save_us
-               apiKeyPost=UserSettings'.use_save_apiKey
-             />
+           | ["auth", "settings"] => <UserSettingsPage />
            | _ => <p> {"Not found" |> str} </p>
            }}
         </PageSection>
@@ -373,8 +367,10 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
   module MainWithInfo = {
     [@react.component]
     let make = (~info: SF.Info.t) =>
-      switch (Resources'.use("local")) {
-      | RemoteData.Loading => <p> {"Loading resources..." |> str} </p>
+      switch (Hook.Resources.use("local")) {
+      | RemoteData.NotAsked
+      | RemoteData.Loading(None) => <p> {"Loading resources..." |> str} </p>
+      | RemoteData.Loading(Some(resources))
       | RemoteData.Success(resources) => <MainWithContext info resources />
       | RemoteData.Failure(title) => <Alert variant=`Danger title />
       };
@@ -382,8 +378,10 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
 
   [@react.component]
   let make = () => {
-    switch (Info'.use()) {
-    | RemoteData.Loading => <p> {"Loading..." |> str} </p>
+    switch (Hook.Info.use()) {
+    | RemoteData.NotAsked
+    | RemoteData.Loading(None) => <p> {"Loading..." |> str} </p>
+    | RemoteData.Loading(Some(info))
     | RemoteData.Success(info) => <MainWithInfo info />
     | RemoteData.Failure(title) => <Alert variant=`Danger title />
     };

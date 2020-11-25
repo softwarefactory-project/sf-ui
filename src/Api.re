@@ -1,94 +1,19 @@
-module UserSettings = {
-  [@decco]
-  type user = {
-    username: string,
-    fullname: string,
-    email: string,
-    idp_sync: bool,
+// The SF remote api hooks
+
+module Hook = (Fetcher: Dependencies.Fetcher) => {
+  open RemoteApi;
+  module API = RemoteApi.API(Fetcher);
+
+  // Info is a simple get hook
+  module Info = {
+    let use = () => API.simpleGet("/api/info.json", SF.Info.decode);
   };
-  [@decco]
-  type apiKey = {api_key: string};
 
-  type t = (user, apiKey);
-  type useHook = unit => RemoteData.t(t);
-  type saveHook = unit => PostRemoteData.t(user);
-
-  type apiKeyState =
-    | NotAsked
-    | Loading
-    | Success(apiKey)
-    | Failure(string);
-  type apiKeyAction =
-    | Regenerate(string);
-
-  type saveApiKey = (apiKeyState, apiKeyAction => unit);
-  type saveApiKeyHook = unit => saveApiKey;
-
-  module Hook = (Fetcher: Dependencies.Fetcher) => {
-    module RemoteData' = RemoteData.Hook(Fetcher);
-    module PostRemoteData' = PostRemoteData.Hook(Fetcher);
-    // Todo: record previously fetched user info
-    let use = (): RemoteData.t(t) =>
-      RemoteData.mzip(
-        RemoteData'.use("/api/user.json", user_decode),
-        RemoteData'.use("/api/apikey.json", apiKey_decode),
-      );
-    let use_save_us = (): PostRemoteData.t(user) => {
-      PostRemoteData'.use("/manage/services_users", user_decode->Some);
-    };
-    let resultToState = (result, setState) =>
-      switch (result) {
-      | Ok(maybeJson) =>
-        switch (maybeJson) {
-        | Some(json) =>
-          switch (json |> apiKey_decode) {
-          | Ok(decoded) => setState(_ => Success(decoded))
-          | Error(_) => setState(_ => Failure("Unable to decode Json"))
-          }
-        | None => setState(_ => Failure("Missing Json data"))
-        }
-      | Error(e) => setState(_ => Failure(e))
-      };
-
-    let use_save_apiKey = (): saveApiKey => {
-      let (state, setState) = React.useState(() => NotAsked);
-      let call = (action: apiKeyAction): unit => {
-        setState(_ => Loading);
-        switch (action) {
-        | Regenerate(username) =>
-          let url =
-            PostRemoteData.(
-              buildUrl("/auth/apikey", [("username", username)])
-            );
-          Js.Promise.(
-            Fetcher.delete(url)
-            |> then_(result =>
-                 switch (result) {
-                 | Ok(_) =>
-                   Fetcher.post(url, None)
-                   |> then_(x => x->resultToState(setState)->resolve)
-                 | Error(e) => setState(_ => Failure(e)) |> resolve
-                 }
-               )
-          )
-          |> ignore;
-        };
-      };
-      (state, call);
-    };
-  };
-};
-
-module Resources = {
-  type t = SF.V2.t
-  and hook = string => RemoteData.t(t);
-
-  // A hook to fetch resources
-  module Hook = (Fetcher: Dependencies.Fetcher) => {
-    module RemoteData' = RemoteData.Hook(Fetcher);
-
-    let use = (default_tenant: string) =>
-      RemoteData'.use("/api/resources.json", json =>
+  // Resource is a simple get hook with a customized decoder based on
+  // the default tenant name (known from info endpoint)
+  module Resources = {
+    let use = default_tenant =>
+      API.simpleGet("/api/resources.json", json =>
         json
         ->SF.Resources.decode
         ->Belt.Result.flatMap(resv1 =>
@@ -96,16 +21,89 @@ module Resources = {
           )
       );
   };
-};
 
-module Info = {
-  type t = SF.Info.t
-  and hook = unit => RemoteData.t(t);
+  // UserSettings is a simple get/post hook
+  module UserSettings = {
+    [@decco]
+    type user = {
+      username: string,
+      fullname: string,
+      email: string,
+      idp_sync: bool,
+    };
 
-  // A hook to fetch infos
-  module Hook = (Fetcher: Dependencies.Fetcher) => {
-    module RemoteData' = RemoteData.Hook(Fetcher);
+    let use = () => API.simplePost("/api/user.json", user_decode);
+  };
 
-    let use = () => RemoteData'.use("/api/info.json", SF.Info.decode);
+  // ApiKey is a hook that manage two states: get and delete
+  module ApiKey = {
+    [@decco]
+    type apiKey = {api_key: string};
+
+    // Hook internal state
+    type state =
+      | Get(WebData.t(apiKey))
+      | Delete(WebData.t(unit));
+
+    // Hook internal state update action
+    type action =
+      // Get the key
+      | ApiKeyRequest(WebData.action_t(apiKey))
+      // Delete the key
+      | ApiKeyDelete(WebData.action_t(unit));
+
+    // Hook internal reducer to manage state update
+    let reducer = (state: state, action: action): state =>
+      switch (action) {
+      | ApiKeyRequest(r) =>
+        let newState =
+          switch (state) {
+          | Get(v) => v
+          // If the key was deleted, then discard previous state
+          | Delete(_) => RemoteData.NotAsked
+          };
+        newState->WebData.updateWebData(r)->Get;
+      | ApiKeyDelete(r) =>
+        // When deleting the key, discard previous state
+        ()->RemoteData.Success->WebData.updateWebData(r)->Delete
+      };
+
+    // Hook internal functions to manage the key
+    let get = dispatch =>
+      API.get("/api/apikey.json", apiKey_decode, r =>
+        r->ApiKeyRequest->dispatch
+      );
+    let delete = dispatch =>
+      API.delete("/api/apikey.json", r => r->ApiKeyDelete->dispatch);
+    let create = dispatch =>
+      API.post("/api/apikey.json", None, apiKey_decode, r =>
+        r->ApiKeyRequest->dispatch
+      );
+
+    // Component actions:
+    type callbackAction =
+      | Delete
+      | Regenerate;
+
+    let use = () => {
+      let (state, dispatch) =
+        React.useReducer(reducer, RemoteData.NotAsked->Get);
+      React.useEffect0(() => {
+        get(dispatch)->ignore;
+        None;
+      });
+      // The function the component calls to perform actions
+      let callback = (cbAction: callbackAction) =>
+        (
+          switch (cbAction) {
+          | Delete => delete(dispatch)->ignore
+          | Regenerate =>
+            Js.Promise.(delete(dispatch) |> then_(() => create(dispatch)))
+            ->ignore
+          }
+        )
+        ->ignore;
+      (state, callback);
+    };
   };
 };
