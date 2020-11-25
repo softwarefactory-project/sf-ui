@@ -292,13 +292,22 @@ module WelcomePage = {
     </Bullseye>;
 
   [@react.component]
-  let make = (~info: SF.Info.t, ~resources: SF.V2.t) => {
+  let make = (~info: SF.Info.t, ~resourcesHook: Api.resources_hook_t) => {
+    let (state, dispatch) = resourcesHook;
+    React.useEffect0(RemoteApi.getWhenNeeded(state, dispatch));
     <>
       {splashLogo(info)}
       <Menu services={info.services} />
       <Grid hasGutter=true>
         <GridItem offset=Column._1 span=Column._10>
-          <TenantList tenants={resources.tenants} />
+          {switch (state) {
+           | RemoteData.NotAsked
+           | RemoteData.Loading(None) => <p> {"Loading..." |> str} </p>
+           | RemoteData.Loading(Some(resources))
+           | RemoteData.Success(resources) =>
+             <TenantList tenants={resources.tenants} />
+           | RemoteData.Failure(title) => <Alert variant=`Danger title />
+           }}
         </GridItem>
       </Grid>
     </>;
@@ -307,25 +316,34 @@ module WelcomePage = {
 
 module ProjectPage = {
   [@react.component]
-  let make = (~project_id: string, ~resources: SF.V2.t) => {
-    let maybeProject =
-      resources.tenants
-      ->Belt.List.map(tenant => tenant.projects)
-      ->Belt.List.flatten
-      ->Belt.List.keep(project => project.name == project_id)
-      ->Belt.List.head;
-    switch (maybeProject) {
-    | Some(project) => <ProjectCard project />
-    | None => <p> {"Project " ++ project_id ++ " not found" |> str} </p>
+  let make = (~project_id: string, ~resourcesHook: Api.resources_hook_t) => {
+    let (state, dispatch) = resourcesHook;
+    React.useEffect0(RemoteApi.getWhenNeeded(state, dispatch));
+    switch (state) {
+    | RemoteData.NotAsked
+    | RemoteData.Loading(None) => <p> {"Loading..." |> str} </p>
+    | RemoteData.Loading(Some(resources))
+    | RemoteData.Success(resources) =>
+      let maybeProject =
+        resources.tenants
+        ->Belt.List.map(tenant => tenant.projects)
+        ->Belt.List.flatten
+        ->Belt.List.keep(project => project.name == project_id)
+        ->Belt.List.head;
+      switch (maybeProject) {
+      | Some(project) => <ProjectCard project />
+      | None => <p> {"Project " ++ project_id ++ " not found" |> str} </p>
+      };
+
+    | RemoteData.Failure(title) => <Alert variant=`Danger title />
     };
   };
 };
 
 module Main = (Fetcher: Dependencies.Fetcher) => {
   module Auth' = Auth.Hook(Fetcher);
-  module Resources' = Api.Resources.Hook(Fetcher);
-  module Info' = Api.Info.Hook(Fetcher);
-  module UserSettings' = Api.UserSettings.Hook(Fetcher);
+  module Hook = Api.Hook(Fetcher);
+  module UserSettingsPage = UserSettings.Page(Fetcher);
 
   let getHeaderLogo = (info: SF.Info.t) =>
     <Brand
@@ -336,7 +354,7 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
 
   module MainWithContext = {
     [@react.component]
-    let make = (~info: SF.Info.t, ~resources: SF.V2.t) => {
+    let make = (~info: SF.Info.t, ~resourcesHook: Api.resources_hook_t) => {
       let auth = Auth'.use(~defaultBackend=Auth.Cauth);
       let header =
         <PageHeader
@@ -354,15 +372,11 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
       <Page header>
         <PageSection isFilled=true>
           {switch (ReasonReactRouter.useUrl().path) {
-           | [] => <WelcomePage info resources />
-           | ["project", project_id] => <ProjectPage project_id resources />
+           | [] => <WelcomePage info resourcesHook />
+           | ["project", project_id] =>
+             <ProjectPage project_id resourcesHook />
            | ["auth", "login"] => <UserLogin.Page info auth />
-           | ["auth", "settings"] =>
-             <UserSettings.Page
-               userSettings=UserSettings'.use
-               userSettingsPost=UserSettings'.use_save_us
-               apiKeyPost=UserSettings'.use_save_apiKey
-             />
+           | ["auth", "settings"] => <UserSettingsPage />
            | _ => <p> {"Not found" |> str} </p>
            }}
         </PageSection>
@@ -372,20 +386,21 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
 
   module MainWithInfo = {
     [@react.component]
-    let make = (~info: SF.Info.t) =>
-      switch (Resources'.use("local")) {
-      | RemoteData.Loading => <p> {"Loading resources..." |> str} </p>
-      | RemoteData.Success(resources) => <MainWithContext info resources />
-      | RemoteData.Failure(title) => <Alert variant=`Danger title />
-      };
+    let make = (~info: SF.Info.t) => {
+      // Here we create the resources hook so that
+      // the data persists accross navigation
+      let resourcesHook = Hook.Resources.use("local");
+      <MainWithContext info resourcesHook />;
+    };
   };
 
   [@react.component]
-  let make = () => {
-    switch (Info'.use()) {
-    | RemoteData.Loading => <p> {"Loading..." |> str} </p>
+  let make = () =>
+    switch (Hook.Info.use()) {
+    | RemoteData.NotAsked
+    | RemoteData.Loading(None) => <p> {"Loading..." |> str} </p>
+    | RemoteData.Loading(Some(info))
     | RemoteData.Success(info) => <MainWithInfo info />
     | RemoteData.Failure(title) => <Alert variant=`Danger title />
     };
-  };
 };
