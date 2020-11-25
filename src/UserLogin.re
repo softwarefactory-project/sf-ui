@@ -3,7 +3,7 @@ open Patternfly;
 module Page = {
   [@react.component]
   let make = (~info: SF.Info.t, ~auth: Auth.t) => {
-    let (_authState, authDispatch) = auth;
+    let (authState, authDispatch) = auth;
     // Ensure we are logged-out when rendering the login form
     React.useEffect0(() => {
       authDispatch(Auth.Logout);
@@ -47,12 +47,15 @@ module Page = {
       </>;
 
     let mkOauthButton = (backend, icon, text) =>
-      <Button
-        isBlock=true
-        onClick={_ => authDispatch(Auth.Login(Auth.CauthLogin(backend)))}>
-        icon
-        text->React.string
-      </Button>;
+      <form method="post" action="/auth/login" target="_top">
+        <input type_="hidden" name="back" value={Cauth.getBack()} />
+        <input
+          type_="hidden"
+          name="method"
+          value={backend->Cauth.backendMethod}
+        />
+        <Button isBlock=true _type=`Submit> icon text->React.string </Button>
+      </form>;
 
     let mkOauthButton' = (backend, text) =>
       mkOauthButton(backend, React.null, text);
@@ -105,18 +108,27 @@ module Page = {
         onChangePassword
         onLoginButtonClick
       />;
-
-    <LoginPage
-      footerListVariants=`Inline
-      footerListItems
-      loginTitle="Log in to your account"
-      loginSubtitle>
-      {useLocalAccount ? loginForm : externalIdp}
-      <br />
-      <a onClick={_ => toggleLocalAccount(_ => !useLocalAccount)}>
-        "Toggle login form"->React.string
-      </a>
-    </LoginPage>;
+    switch (authState.auth_request) {
+    | RemoteData.Loading(_)
+    | RemoteData.NotAsked =>
+      <LoginPage
+        footerListVariants=`Inline
+        footerListItems
+        loginTitle="Log in to your account"
+        loginSubtitle>
+        {authState.auth_request->RemoteData.isLoading
+           ? <Spinner /> : React.null}
+        {useLocalAccount ? loginForm : externalIdp}
+        <br />
+        <a onClick={_ => toggleLocalAccount(_ => !useLocalAccount)}>
+          "Toggle login form"->React.string
+        </a>
+      </LoginPage>
+    | RemoteData.Failure(title) => <Alert variant=`Danger title />
+    | RemoteData.Success(_) =>
+      ReasonReactRouter.push("/");
+      <p> "If you are not redirected, click /"->React.string </p>;
+    };
   };
 };
 
@@ -125,7 +137,7 @@ module Header = {
   let make = (~auth: Auth.t) => {
     <PageHeaderToolsGroup>
       {switch (auth) {
-       | (Some({name}), dispatch) =>
+       | ({auth_request: _, user: Some({name})}, dispatch) =>
          <>
            <PageHeaderToolsGroup>
              <PageHeaderToolsItem>
@@ -146,7 +158,7 @@ module Header = {
              </PageHeaderToolsItem>
            </PageHeaderToolsGroup>
          </>
-       | (None, dispatch) =>
+       | (_, dispatch) =>
          <Button
            variant=`Secondary
            onClick={_ => {

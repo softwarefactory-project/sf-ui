@@ -7,7 +7,10 @@ and action =
   | Logout
 and loginInfos =
   | CauthLogin(Cauth.backend)
-and state = option(user)
+and state = {
+  auth_request: RemoteApi.state_t(unit),
+  user: option(user),
+}
 and user = {name: string}
 // Internally, the hook supports two backends:
 and backend =
@@ -19,7 +22,7 @@ module Hook = (Fetcher: Dependencies.Fetcher) => {
 
   let use = (~defaultBackend: backend): t => {
     // Initialize the backends hook:
-    let (_cauthState, cauthDispatch) = Cauth'.use();
+    let (cauthState, cauthDispatch) = Cauth'.use();
     // Check what is the current backend:
     let (authBackend, setAuthBackend) = React.useState(_ => defaultBackend);
     // Create the callback:
@@ -43,11 +46,13 @@ module Hook = (Fetcher: Dependencies.Fetcher) => {
 
     // Finally we check the auth status based on the selected backend:
     let authState =
-      switch (authBackend) {
-      | Cauth =>
-        Cauth.getUser()->Belt.Option.flatMap(uid => {name: uid}->Some)
-      | Keycloak => None
-      };
-    (authState, authDispatch);
+      fun
+      | Cauth => {
+          auth_request: cauthState,
+          user:
+            Cauth.getUser()->Belt.Option.flatMap(uid => {name: uid}->Some),
+        }
+      | Keycloak => {auth_request: RemoteData.NotAsked, user: None};
+    (authBackend->authState, authDispatch);
   };
 };
