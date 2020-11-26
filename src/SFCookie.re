@@ -19,7 +19,6 @@ module AbstractCauthCookie = (CF: CookieFetcher) => {
       | None => None
       };
     };
-    // If we get a auth_pubtkt payload then let's assume an uid key is present
     getCookie()
     ->Belt.Option.flatMap(c =>
         {
