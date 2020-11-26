@@ -4,6 +4,11 @@ module Page = {
   [@react.component]
   let make = (~info: SF.Info.t, ~auth: Auth.t) => {
     let (_authState, authDispatch) = auth;
+    // Ensure we are logged-out when rendering the login form
+    React.useEffect0(() => {
+      authDispatch(Auth.Logout);
+      None;
+    });
     let (useLocalAccount, toggleLocalAccount) = React.useState(_ => false);
 
     // Username
@@ -141,9 +146,14 @@ module Header = {
              </PageHeaderToolsItem>
            </PageHeaderToolsGroup>
          </>
-       | (None, _) =>
+       | (None, dispatch) =>
          <Button
-           variant=`Secondary onClick={_ => ReasonReactRouter.push("/login")}>
+           variant=`Secondary
+           onClick={_ => {
+             // Ensure we are logged-out when clicking login.
+             dispatch(Auth.Logout);
+             ReasonReactRouter.push("/login");
+           }}>
            {"Login" |> React.string}
          </Button>
        }}

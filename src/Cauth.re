@@ -23,17 +23,47 @@ and credentials = {
   password: string,
 };
 
-type cauthParams = list((string, string));
+[@decco]
+type cauthArgs = {
+  username: option(string),
+  password: option(string),
+};
 
-let createParams = (backend: backend): cauthParams =>
+[@decco]
+type cauthPost = {
+  args: cauthArgs,
+  method: string,
+  back: string,
+};
+
+// TODO: get this from query string
+let getBack = () => "/";
+
+let idpParams = method => {
+  method,
+  back: getBack(),
+  args: {
+    username: None,
+    password: None,
+  },
+};
+
+let createParams = (backend: backend): cauthPost =>
   switch (backend) {
-  | Password(creds) => [
-      ("username", creds.username),
-      ("password", creds.password),
-      ("method", "password"),
-      ("back", "/"),
-    ]
-  | GitHub => [("method", "github"), ("back", "/")]
+  | Password(creds) => {
+      method: "Password",
+      back: getBack(),
+      args: {
+        username: creds.username->Some,
+        password: creds.password->Some,
+      },
+    }
+  | GitHub => "GitHub"->idpParams
+  | Google => "Google"->idpParams
+  | BitBucket => "BitBucket"->idpParams
+  | OpenID => "OpenID"->idpParams
+  | OpenIDConnect => "OpenIDConnect"->idpParams
+  | SAML => "SAML2"->idpParams
   };
 
 // Simulate the result of a cauth authentication success
@@ -57,8 +87,9 @@ let fakeLogin = (backend: backend) => {
         ++ "%3Bvaliduntil%3D1606139056.416925",
       )
     )
+  | _ => ()
   };
-  ReasonReactRouter.push("/");
+  ReasonReactRouter.push(getBack());
 };
 
 let getUser = SFCookie.CauthCookie.getUser;
@@ -73,17 +104,15 @@ module Hook = (Fetcher: Dependencies.Fetcher) => {
       switch (action) {
       | Login(backend) =>
         setState(Loading);
-        let toJsonString = ((. x) => x->Js.Json.string);
-        let body =
-          Js.Dict.map(toJsonString, createParams(backend)->Js.Dict.fromList)
-          ->Js.Json.object_;
         Js.Promise.(
-          Fetcher.post("/auth/login", body->Some)
-          |> then_(result => result->Loaded->setState->resolve)
+          Fetcher.post(
+            "/auth/login",
+            createParams(backend)->cauthPost_encode->Some,
+          )
+          |> then_(result => {result->Loaded->setState->resolve})
         )
         |> ignore;
-        // TODO: remove fakeLogin
-        fakeLogin(backend);
+      // fakeLogin(backend);
       | Logout =>
         SFCookie.CauthCookie.remove();
         setState(Unloaded);

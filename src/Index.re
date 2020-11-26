@@ -68,6 +68,7 @@ module BsFetch = {
         Fetch.RequestInit.make(
           ~method_=verb,
           ~body=json->Js.Json.stringify->Fetch.BodyInit.make,
+          ~redirect=Follow,
           ~headers,
           (),
         )
