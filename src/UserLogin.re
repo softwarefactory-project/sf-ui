@@ -3,8 +3,6 @@ open Patternfly;
 module Page = {
   [@react.component]
   let make = (~info: SF.Info.t, ~auth: Auth.t) => {
-    // TODO: add (and use) idp to info type
-    ignore(info);
     let (_authState, authDispatch) = auth;
     let (useLocalAccount, toggleLocalAccount) = React.useState(_ => false);
 
@@ -43,21 +41,42 @@ module Page = {
         "Invalid login credentials."->React.string
       </>;
 
+    let mkOauthButton = (backend, icon, text) =>
+      <Button
+        isBlock=true
+        onClick={_ => authDispatch(Auth.Login(Auth.CauthLogin(backend)))}>
+        icon
+        text->React.string
+      </Button>;
+
+    let mkOauthButton' = (backend, text) =>
+      mkOauthButton(backend, React.null, text);
+
+    let oauthButton =
+      fun
+      | "github" =>
+        mkOauthButton(Cauth.GitHub, <Icons.Github />, " Log in with Github")
+      | "google" =>
+        mkOauthButton(Cauth.Google, <Icons.Google />, " Log in with Google")
+      | "bitbucket" =>
+        mkOauthButton'(Cauth.BitBucket, "Log in with BitBucket")
+      | _ => React.null;
+
+    let otherButton =
+      fun
+      | SF.Info.{name: "openid", text} => mkOauthButton'(Cauth.OpenID, text)
+      | SF.Info.{name: "openid_connect", text} =>
+        mkOauthButton'(Cauth.OpenIDConnect, text)
+      | SF.Info.{name: "SAML2", text} => mkOauthButton'(Cauth.SAML, text)
+      | _ => React.null;
+
     let externalIdp =
-      <>
-        <Button
-          isBlock=true
-          onClick={_ =>
-            authDispatch(Auth.Login(Auth.CauthLogin(Cauth.GitHub)))
-          }>
-          <Icons.Github />
-          " Log in with Github"->React.string
-        </Button>
-        <Button isBlock=true>
-          <Icons.Google />
-          " Log in with Google"->React.string
-        </Button>
-      </>;
+      Belt.List.concat(
+        info.auths.oauth->Belt.List.map(oauthButton),
+        info.auths.other->Belt.List.map(otherButton),
+      )
+      ->Belt.List.toArray
+      ->React.array;
 
     let onLoginButtonClick = (e: ReactEvent.Mouse.t) => {
       e->ReactEvent.Mouse.preventDefault;
@@ -124,8 +143,7 @@ module Header = {
          </>
        | (None, _) =>
          <Button
-           variant=`Secondary
-           onClick={_ => ReasonReactRouter.push("/auth/login")}>
+           variant=`Secondary onClick={_ => ReasonReactRouter.push("/login")}>
            {"Login" |> React.string}
          </Button>
        }}

@@ -1,4 +1,8 @@
 {
+  "auths": {
+    "oauth": ["github"],
+    "other": [{ "name": "openid", "text": "Login with LaunchPad" }]
+  },
   "services": [
     {
       "name": "gerrit",

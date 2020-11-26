@@ -13,6 +13,11 @@ and action =
 and backend =
   | Password(credentials)
   | GitHub
+  | Google
+  | BitBucket
+  | OpenID
+  | OpenIDConnect
+  | SAML
 and credentials = {
   username: string,
   password: string,

@@ -356,7 +356,7 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
           {switch (ReasonReactRouter.useUrl().path) {
            | [] => <WelcomePage info resources />
            | ["project", project_id] => <ProjectPage project_id resources />
-           | ["auth", "login"] => <UserLogin.Page info auth />
+           | ["login"] => <UserLogin.Page info auth />
            | ["auth", "settings"] =>
              <UserSettings.Page
                userSettings=UserSettings'.use
