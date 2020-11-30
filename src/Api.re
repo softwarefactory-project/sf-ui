@@ -51,10 +51,35 @@ module Hook = (Fetcher: Dependencies.Fetcher) => {
         ->Js.Dict.fromList
         ->Js.Json.object_;
 
+    [@decco.decode]
+    type managesfUser = {
+      username: string,
+      full_name: string,
+      email: string,
+      idp_sync: bool,
+    };
+
+    [@decco.decode]
+    type userPut = {updated_fields: managesfUser};
+
+    let put_decode = json =>
+      json
+      ->userPut_decode
+      ->Belt.Result.flatMap(up =>
+          {
+            username: up.updated_fields.username,
+            fullname: up.updated_fields.full_name,
+            email: up.updated_fields.email,
+            idp_sync: up.updated_fields.idp_sync,
+          }
+          ->Ok
+        );
+
     let use = (user: string) =>
-      RemoteApi.Hook.useSimplePost(
+      RemoteApi.Hook.useSimplePut(
         userSettingEndpoint ++ "?username=" ++ user,
         user_decode,
+        put_decode,
       );
   };
 
@@ -65,7 +90,7 @@ module Hook = (Fetcher: Dependencies.Fetcher) => {
 
     // Hook internal state
     type state = {
-      api_key: state_t(apiKey),
+      api_key: state_t(option(apiKey)),
       delete_goal: string,
       delete_request: state_t(unit),
     };
@@ -78,7 +103,7 @@ module Hook = (Fetcher: Dependencies.Fetcher) => {
     // Hook internal state update action
     type action =
       // Get the key
-      | ApiKeyRequest(action_t(apiKey))
+      | ApiKeyRequest(action_t(option(apiKey)))
       // Delete the key
       | ApiKeyRegenerate(action_t(unit))
       | ApiKeyDelete(action_t(unit));
@@ -98,7 +123,11 @@ module Hook = (Fetcher: Dependencies.Fetcher) => {
         }
       | ApiKeyRegenerate(r)
       | ApiKeyDelete(r) => {
-          ...state,
+          api_key:
+            switch (r) {
+            | NetworkRequestSuccess(_) => RemoteData.NotAsked
+            | _ => state.api_key
+            },
           delete_goal: action->goal,
           delete_request: state.delete_request->updateRemoteData(r),
         }
@@ -106,14 +135,14 @@ module Hook = (Fetcher: Dependencies.Fetcher) => {
 
     // Hook internal functions to manage the key
     let get = dispatch =>
-      RemoteApi.get(apiKeyEndpoint, apiKey_decode, r =>
+      RemoteApi.getMaybe(apiKeyEndpoint, apiKey_decode, r =>
         r->ApiKeyRequest->dispatch
       );
     let delete = (dispatch, intent) =>
       RemoteApi.delete(apiKeyEndpoint, r => r->intent->dispatch);
     let create = dispatch =>
       RemoteApi.post(apiKeyEndpoint, None, apiKey_decode, r =>
-        r->ApiKeyRequest->dispatch
+        r->actionMap(x => x->Some)->ApiKeyRequest->dispatch
       );
 
     // Component actions:

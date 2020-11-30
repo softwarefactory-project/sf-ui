@@ -72,20 +72,37 @@ module Page = (Fetcher: Dependencies.Fetcher) => {
               variant=`Danger
               title={(state.delete_goal ++ " failed: " ++ error)->React.string}
             />,
-            "unknown",
+            (
+              state.api_key
+              |> RemoteData.withDefault(
+                   Hook.ApiKey.{api_key: "unknown"}->Some,
+                 )
+            )
+            ->Belt.Option.flatMap(ak => ak.api_key->Some)
+            ->Belt.Option.getWithDefault(""),
           )
         | (RemoteData.Loading(_), _) => (
             <Alert variant=`Info title={"Deleting..."->React.string} />,
             "",
           )
-        | (RemoteData.Success(_), RemoteData.Success(apiKey)) => (
+        | (RemoteData.Success(_), RemoteData.Success(Some(apiKey))) => (
             <Alert variant=`Info title={"New key generated"->React.string} />,
             apiKey.api_key,
           )
+        | (RemoteData.Success(_), RemoteData.NotAsked)
+        | (RemoteData.Success(_), RemoteData.Success(None)) => (
+            <Alert variant=`Info title={"Key deleted"->React.string} />,
+            "",
+          )
         | (_, RemoteData.Loading(None))
+        | (_, RemoteData.Loading(Some(None)))
         | (_, RemoteData.NotAsked) => (<p> "loading"->React.string </p>, "")
-        | (_, RemoteData.Loading(Some(apiKey)))
-        | (_, RemoteData.Success(apiKey)) => (React.null, apiKey.api_key)
+        | (_, RemoteData.Loading(Some(Some(apiKey))))
+        | (_, RemoteData.Success(Some(apiKey))) => (
+            React.null,
+            apiKey.api_key,
+          )
+        | (_, RemoteData.Success(None)) => (React.null, "")
         | (_, RemoteData.Failure(title)) => (
             <Alert variant=`Danger title />,
             "",
@@ -103,10 +120,12 @@ module Page = (Fetcher: Dependencies.Fetcher) => {
             variant=`Primary onClick={_ => callback(Hook.ApiKey.Regenerate)}>
             "Generate new API key"->React.string
           </Button>
-          <Button
-            variant=`Primary onClick={_ => callback(Hook.ApiKey.Delete)}>
-            "Delete API key"->React.string
-          </Button>
+          {apiKeyStr == ""
+             ? React.null
+             : <Button
+                 variant=`Primary onClick={_ => callback(Hook.ApiKey.Delete)}>
+                 "Delete API key"->React.string
+               </Button>}
         </ActionGroup>
       </Form>;
     };

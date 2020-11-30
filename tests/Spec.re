@@ -7,7 +7,7 @@ let stubResources =
 let stubInfo = Node.Fs.readFileSync("tests/stubs/api/info.json", `utf8);
 
 module StubFetch = {
-  let fetch = url => {
+  let get = url => {
     Js.log("Stubing: " ++ url);
     (
       switch (url) {
@@ -17,7 +17,7 @@ module StubFetch = {
       }
     )
     |> Js.Json.parseExn
-    |> (x => Some(x))
+    |> (x => x->Some->Ok)
     |> Js.Promise.resolve;
   };
   let post = (_url: string, _body: option(Js.Json.t)) => {

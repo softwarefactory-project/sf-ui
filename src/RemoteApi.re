@@ -100,16 +100,49 @@ let debugChain = (r, m) => {
 
 // The low-level module
 module API = (Fetcher: Dependencies.Fetcher) => {
+  let getMaybe =
+      (
+        url: string,
+        decode: decoder_t('a),
+        dispatch: dispatch_t(option('a)),
+      ) => {
+    dispatch(NetworkRequestBegin);
+    Js.Promise.(
+      Fetcher.get(url)
+      |> then_(result =>
+           (
+             switch (result) {
+             | Ok(Some(json)) =>
+               json
+               ->decode
+               ->deccoErrorToResponse
+               ->responseToAction
+               ->actionMap(r => r->Some)
+             | Ok(None) => None->NetworkRequestSuccess
+             | Error(e) => e->NetworkRequestError
+             }
+           )
+           ->dispatch
+           ->resolve
+         )
+    );
+  };
+
   let get = (url: string, decode: decoder_t('a), dispatch: dispatch_t('a)) => {
     dispatch(NetworkRequestBegin);
     Js.Promise.(
-      Fetcher.fetch(url)
-      |> then_(json =>
-           json
-           // TODO: improve the Fetcher to return a result when real network error happens
-           ->note("Network error!")
-           ->Result.flatMap(json => json->decode->deccoErrorToResponse)
-           ->responseToAction
+      Fetcher.get(url)
+      |> then_(result =>
+           (
+             switch (result) {
+             | Ok(maybeJson) =>
+               maybeJson
+               ->note("Need json")
+               ->Result.flatMap(json => json->decode->deccoErrorToResponse)
+               ->responseToAction
+             | Error(e) => e->NetworkRequestError
+             }
+           )
            ->dispatch
            ->resolve
          )
@@ -133,22 +166,22 @@ module API = (Fetcher: Dependencies.Fetcher) => {
     );
   };
 
-  let post =
-      (
-        url: string,
-        data: option(json_t),
-        decode: decoder_t('a),
-        dispatch: dispatch_t('a),
-      ) => {
+  let putOrPost = (action, decode: decoder_t('a), dispatch: dispatch_t('a)) => {
     dispatch(NetworkRequestBegin);
     Js.Promise.(
-      Fetcher.post(url, data)
+      action()
       |> then_(resp =>
            resp
            ->Result.flatMap(mjson =>
                mjson
                ->note("Need json!")
-               ->Result.flatMap(json => json->decode->deccoErrorToResponse)
+               ->debugChain("Initial json")
+               ->Result.flatMap(json =>
+                   json
+                   ->decode
+                   ->debugChain("json decode")
+                   ->deccoErrorToResponse
+                 )
                ->responseToAction
                ->dispatch
                ->Ok
@@ -157,6 +190,10 @@ module API = (Fetcher: Dependencies.Fetcher) => {
          )
     );
   };
+
+  let post = (url, data) => putOrPost(() => Fetcher.post(url, data));
+
+  let put = (url, data) => putOrPost(() => Fetcher.put(url, data));
 
   // justPost is like post, but without answer decoding, e.g. for /auth/login
   let justPost = (url: string, data: json_t, dispatch: dispatch_t(unit)) => {
@@ -198,9 +235,9 @@ module API = (Fetcher: Dependencies.Fetcher) => {
       state;
     };
 
-    // A standalone hook similar to useAutoGet but returns a callback to perform post
-    let useSimplePost =
-        (url: string, decoder: decoder_t('a))
+    // A standalone hook similar to useAutoGet but returns a callback to perform put
+    let useSimplePut =
+        (url: string, decoder: decoder_t('a), put_decoder: decoder_t('a))
         : (state_t('a), option(json_t) => unit) => {
       let (state, setState) = React.useState(() => RemoteData.NotAsked);
       let set_state = s => setState(_prevState => s);
@@ -215,7 +252,9 @@ module API = (Fetcher: Dependencies.Fetcher) => {
       (
         state,
         obj =>
-          post(url, obj, decoder, r => state->updateRemoteData(r)->set_state)
+          put(url, obj, put_decoder, r =>
+            state->updateRemoteData(r)->set_state
+          )
           ->ignore,
       );
     };
