@@ -32,8 +32,16 @@ type cauthPost = {
   back: string,
 };
 
+[@bs.val] external nodeEnv: string = "process.env.NODE_ENV";
+
+let isDevelopment =
+  switch (nodeEnv) {
+  | "development" => true
+  | _ => false
+  };
+
 // TODO: get this from query string
-let getBack = () => "https://sftests.com/";
+let getBack = () => isDevelopment ? "/" : "https://sftests.com/";
 
 let backendMethod =
   fun
@@ -115,14 +123,15 @@ module Hook = (Fetcher: Dependencies.Fetcher) => {
     let authenticate = (action: action): unit => {
       switch (action) {
       | Login(backend) =>
-        // Here we just post, and we'll be redirected if the request succeed
-        RemoteApi.justPost(
-          "/auth/login", createParams(backend)->cauthPost_encode, r =>
-          state->updateRemoteData(r)->set_state
-        )
-        ->ignore
+        isDevelopment
+          ? fakeLogin(backend)
+          // Here we just post, and we'll be redirected if the request succeed
+          : RemoteApi.justPost(
+              "/auth/login", createParams(backend)->cauthPost_encode, r =>
+              state->updateRemoteData(r)->set_state
+            )
+            ->ignore
 
-      // fakeLogin(backend);
       | Logout =>
         SFCookie.CauthCookie.remove();
         RemoteData.NotAsked->set_state;

@@ -2,6 +2,11 @@
 
 type resources_hook_t = (RemoteApi.state_t(SF.V2.t), unit => unit);
 
+let apiKeyEndpoint = "/auth/apikey" ++ (Cauth.isDevelopment ? ".json" : "");
+
+let userSettingEndpoint =
+  "/manage/services_users" ++ (Cauth.isDevelopment ? ".json" : "");
+
 module Hook = (Fetcher: Dependencies.Fetcher) => {
   open RemoteApi;
   module RemoteApi = RemoteApi.API(Fetcher);
@@ -36,7 +41,7 @@ module Hook = (Fetcher: Dependencies.Fetcher) => {
     };
 
     let use = () =>
-      RemoteApi.Hook.useSimplePost("/api/user.json", user_decode);
+      RemoteApi.Hook.useSimplePost(userSettingEndpoint, user_decode);
   };
 
   // ApiKey is a hook that manage two states: get and delete
@@ -87,13 +92,13 @@ module Hook = (Fetcher: Dependencies.Fetcher) => {
 
     // Hook internal functions to manage the key
     let get = dispatch =>
-      RemoteApi.get("/api/apikey.json", apiKey_decode, r =>
+      RemoteApi.get(apiKeyEndpoint, apiKey_decode, r =>
         r->ApiKeyRequest->dispatch
       );
     let delete = (dispatch, intent) =>
-      RemoteApi.delete("/api/apikey.json", r => r->intent->dispatch);
+      RemoteApi.delete(apiKeyEndpoint, r => r->intent->dispatch);
     let create = dispatch =>
-      RemoteApi.post("/api/apikey.json", None, apiKey_decode, r =>
+      RemoteApi.post(apiKeyEndpoint, None, apiKey_decode, r =>
         r->ApiKeyRequest->dispatch
       );
 

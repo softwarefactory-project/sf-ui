@@ -2,8 +2,9 @@ open Jest;
 open Expect;
 open ReactTestUtils;
 
-let stubResources = Node.Fs.readFileSync("tests/api/resources.json", `utf8);
-let stubInfo = Node.Fs.readFileSync("tests/api/info.json", `utf8);
+let stubResources =
+  Node.Fs.readFileSync("tests/stubs/api/resources.json", `utf8);
+let stubInfo = Node.Fs.readFileSync("tests/stubs/api/info.json", `utf8);
 
 module StubFetch = {
   let fetch = url => {
