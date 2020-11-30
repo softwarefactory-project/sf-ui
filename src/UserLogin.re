@@ -109,6 +109,7 @@ module Page = {
         onLoginButtonClick
       />;
     switch (authState.auth_request) {
+    | RemoteData.Failure(_)
     | RemoteData.Loading(_)
     | RemoteData.NotAsked =>
       <LoginPage
@@ -118,13 +119,13 @@ module Page = {
         loginSubtitle>
         {authState.auth_request->RemoteData.isLoading
            ? <Spinner /> : React.null}
+        authState.auth_request->RemoteApi.renderError
         {useLocalAccount ? loginForm : externalIdp}
         <br />
         <a onClick={_ => toggleLocalAccount(_ => !useLocalAccount)}>
           "Toggle login form"->React.string
         </a>
       </LoginPage>
-    | RemoteData.Failure(title) => <Alert variant=`Danger title />
     | RemoteData.Success(_) =>
       ReasonReactRouter.push("/");
       <p> "If you are not redirected, click /"->React.string </p>;

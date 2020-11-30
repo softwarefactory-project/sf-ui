@@ -28,6 +28,13 @@ let actionMap = (action: action_t('a), f: 'a => 'b): action_t('b) =>
   | NetworkRequestBegin => NetworkRequestBegin
   };
 
+let removeAPIcall = Js.String.replace("API call failed: ", "");
+
+let renderError: state_t('a) => React.element =
+  fun
+  | Failure(e) => <Patternfly.Alert variant=`Danger title={e->removeAPIcall} />
+  | _ => React.null;
+
 let chainCall =
     (
       start: promise_t(response_t('a)),
