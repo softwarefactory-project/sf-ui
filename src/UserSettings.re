@@ -113,13 +113,15 @@ module Page = (Fetcher: Dependencies.Fetcher) => {
   };
 
   [@react.component]
-  let make = () => {
-    let (state, callback) = Hook.UserSettings.use();
-
+  let make = (~username: string) => {
+    let (state, callback) = Hook.UserSettings.use(username);
     <>
       {switch (state) {
+       | RemoteData.Loading(Some(user))
        | RemoteData.Success(user) => <SettingForm user callback />
-       | _ => <p> "Loading"->React.string </p>
+       | RemoteData.Loading(None)
+       | RemoteData.NotAsked => <p> "Loading"->React.string </p>
+       | RemoteData.Failure(title) => <Alert variant=`Danger title />
        }}
       <ApiForm />
     </>;

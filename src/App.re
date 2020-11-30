@@ -375,7 +375,12 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
            | ["project", project_id] =>
              <ProjectPage project_id resourcesHook />
            | ["login"] => <UserLogin.Page info auth />
-           | ["auth", "settings"] => <UserSettingsPage />
+           | ["auth", "settings"] =>
+             switch (auth) {
+             | ({user: Some(user)}, _) =>
+               <UserSettingsPage username={user.name} />
+             | _ => <p> {"You need to login first" |> str} </p>
+             }
            | _ => <p> {"Not found" |> str} </p>
            }}
         </PageSection>

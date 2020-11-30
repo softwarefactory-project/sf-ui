@@ -93,6 +93,11 @@ let getWhenNeeded = (state, dispatch, ()) => {
   None;
 };
 
+let debugChain = (r, m) => {
+  Js.log2("[DEBUG] " ++ m ++ ":", r);
+  r;
+};
+
 // The low-level module
 module API = (Fetcher: Dependencies.Fetcher) => {
   let get = (url: string, decode: decoder_t('a), dispatch: dispatch_t('a)) => {

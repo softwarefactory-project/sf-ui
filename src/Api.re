@@ -32,7 +32,7 @@ module Hook = (Fetcher: Dependencies.Fetcher) => {
 
   // UserSettings is a simple get/post hook
   module UserSettings = {
-    [@decco]
+    [@decco.decode]
     type user = {
       username: string,
       fullname: string,
@@ -40,8 +40,22 @@ module Hook = (Fetcher: Dependencies.Fetcher) => {
       idp_sync: bool,
     };
 
-    let use = () =>
-      RemoteApi.Hook.useSimplePost(userSettingEndpoint, user_decode);
+    let user_encode: user => Js.Json.t =
+      user =>
+        [
+          ("username", user.username->Js.Json.string),
+          ("full_name", user.fullname->Js.Json.string),
+          ("email", user.email->Js.Json.string),
+          ("idp_sync", user.idp_sync->Js.Json.boolean),
+        ]
+        ->Js.Dict.fromList
+        ->Js.Json.object_;
+
+    let use = (user: string) =>
+      RemoteApi.Hook.useSimplePost(
+        userSettingEndpoint ++ "?username=" ++ user,
+        user_decode,
+      );
   };
 
   // ApiKey is a hook that manage two states: get and delete
