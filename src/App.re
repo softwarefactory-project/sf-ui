@@ -159,7 +159,7 @@ module SRsCard = {
         <br />
         <Grid hasGutter=true>
           {srs->renderList(sr => {
-             <GridItem key={sr.name} span=Column._6>
+             <GridItem key={sr.name} span=PFTypes.Column._6>
                <SRCard key={sr.name} sr />
              </GridItem>
            })}
@@ -248,11 +248,13 @@ module TenantCard = {
         </span>
       </CardTitle>
       <CardBody>
-        <Bullseye> "This tenant owns the following projects" </Bullseye>
-        {tenant.projects
-         ->renderList(project =>
-             <ProjectCard key={project.name} project isSmall=true />
-           )}
+        <Stack hasGutter=true>
+          <Bullseye> "This tenant owns the following projects" </Bullseye>
+          {tenant.projects
+           ->renderList(project =>
+               <ProjectCard key={project.name} project isSmall=true />
+             )}
+        </Stack>
       </CardBody>
     </Card>;
   };
@@ -261,12 +263,26 @@ module TenantCard = {
 module WelcomePage = {
   module TenantList = {
     [@react.component]
-    let make = (~tenants: list(SF.V2.Tenant.t)) =>
-      <Grid hasGutter=true>
+    let make = (~tenants: list(SF.V2.Tenant.t)) => {
+      <Stack hasGutter=true>
         {tenants->renderList(tenant => {
-           <GridItem key={tenant.name}> <TenantCard tenant /> </GridItem>
+           <TenantCard key={tenant.name} tenant />
          })}
-      </Grid>;
+      </Stack>;
+    };
+  };
+
+  module SplashLogo = {
+    [@react.component]
+    let make = (~info: SF.Info.t) => {
+      <Bullseye>
+        <img
+          src={"data:image/png;base64," ++ info.splash_image_b64data}
+          width="250"
+          height="250"
+        />
+      </Bullseye>;
+    };
   };
 
   module Menu = {
@@ -274,7 +290,7 @@ module WelcomePage = {
     let make = (~services: list(SF.Info.service)) => {
       <Bullseye>
         {services->renderList(service =>
-           <GridItem key={service.name} span=Column._1>
+           <GridItem key={service.name} span=PFTypes.Column._1>
              <Service.Logo name={service.name} link={service.path} />
            </GridItem>
          )}
@@ -282,35 +298,27 @@ module WelcomePage = {
     };
   };
 
-  let splashLogo = (info: SF.Info.t) =>
-    <Bullseye>
-      <img
-        src={"data:image/png;base64," ++ info.splash_image_b64data}
-        width="250"
-        height="250"
-      />
-    </Bullseye>;
-
   [@react.component]
   let make = (~info: SF.Info.t, ~resourcesHook: Api.resources_hook_t) => {
     let (state, dispatch) = resourcesHook;
     React.useEffect0(RemoteApi.getWhenNeeded(state, dispatch));
-    <>
-      {splashLogo(info)}
+    <Stack hasGutter=true>
+      <SplashLogo info />
       <Menu services={info.services} />
-      <Grid hasGutter=true>
-        <GridItem offset=Column._1 span=Column._10>
-          {switch (state) {
-           | RemoteData.NotAsked
-           | RemoteData.Loading(None) => <p> {"Loading..." |> str} </p>
-           | RemoteData.Loading(Some(resources))
-           | RemoteData.Success(resources) =>
-             <TenantList tenants={resources.tenants} />
-           | RemoteData.Failure(title) => <Alert variant=`Danger title />
-           }}
-        </GridItem>
-      </Grid>
-    </>;
+        <Grid hasGutter=true>
+          <GridItem offset=PFTypes.Column._1 span=PFTypes.Column._10>
+            {switch (state) {
+             | RemoteData.NotAsked
+             | RemoteData.Loading(None) => <p> {"Loading..." |> str} </p>
+             | RemoteData.Loading(Some(resources))
+             | RemoteData.Success(resources) =>
+                   <TenantList tenants={resources.tenants} />
+              //  </Stack>
+             | RemoteData.Failure(title) => <Alert variant=`Danger title />
+             }}
+          </GridItem>
+        </Grid>
+    </Stack>;
   };
 };
 

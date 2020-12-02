@@ -1,6 +1,17 @@
 open Patternfly;
+open Patternfly.Layout;
+
 module Page = (Fetcher: Dependencies.Fetcher) => {
   module Hook = Api.Hook(Fetcher);
+
+  let boxStyle = ReactDOM.Style.make(~borderRadius="10px", ());
+  let boxTitleStyle =
+    ReactDOM.Style.make(
+      ~borderTopLeftRadius="10px",
+      ~borderTopRightRadius="10px",
+      ~backgroundColor="var(--pf-global--palette--blue-100)",
+      (),
+    );
 
   module SettingForm = {
     [@react.component]
@@ -8,56 +19,60 @@ module Page = (Fetcher: Dependencies.Fetcher) => {
       let (idpSync, setIdpSync) = React.useState(_ => user.idp_sync);
       let (fullname, setFullname) = React.useState(() => user.fullname);
       let (email, seteMail) = React.useState(() => user.email);
-      <Form>
-        <h1> "User information"->React.string </h1>
-        <FormGroup label={"Username"->React.string} fieldId="username">
-          <TextInput value={user.username} isReadOnly=true id="username" />
-        </FormGroup>
-        <FormGroup label={"Full name"->React.string} fieldId="fullName">
-          <TextInput
-            value=fullname
-            isReadOnly=idpSync
-            id="fullName"
-            onChange={(value, _) => {setFullname(_ => value)}}
-          />
-        </FormGroup>
-        <FormGroup label={"eMail"->React.string} fieldId="eMail">
-          <TextInput
-            value=email
-            isReadOnly=idpSync
-            id="eMail"
-            onChange={(value, _) => {seteMail(_ => value)}}
-          />
-        </FormGroup>
-        <FormGroup
-          label={"Manage Identity Provider"->React.string} fieldId="idp">
-          <Checkbox
-            label="Synchronize user data with the Identity Provider"
-            isChecked=idpSync
-            onChange={(_, _) => setIdpSync(_ => !idpSync)}
-            id="idpSync"
-          />
-        </FormGroup>
-        <ActionGroup>
-          <Button
-            variant=`Primary
-            onClick={_ =>
-              callback(
-                Hook.UserSettings.{
-                  username: user.username,
-                  fullname,
-                  email,
-                  idp_sync: idpSync,
-                }
-                ->Hook.UserSettings.user_encode
-                ->Some,
-              )
-              ->ignore
-            }>
-            "Save"->React.string
-          </Button>
-        </ActionGroup>
-      </Form>;
+      <Card isCompact=true style=boxStyle>
+        <CardTitle style=boxTitleStyle> "User information" </CardTitle>
+        <CardBody>
+          <Form>
+            <FormGroup label={"Username"->React.string} fieldId="username">
+              <TextInput value={user.username} isReadOnly=true id="username" />
+            </FormGroup>
+            <FormGroup label={"Full name"->React.string} fieldId="fullName">
+              <TextInput
+                value=fullname
+                isReadOnly=idpSync
+                id="fullName"
+                onChange={(value, _) => {setFullname(_ => value)}}
+              />
+            </FormGroup>
+            <FormGroup label={"eMail"->React.string} fieldId="eMail">
+              <TextInput
+                value=email
+                isReadOnly=idpSync
+                id="eMail"
+                onChange={(value, _) => {seteMail(_ => value)}}
+              />
+            </FormGroup>
+            <FormGroup
+              label={"Manage Identity Provider"->React.string} fieldId="idp">
+              <Checkbox
+                label="Synchronize user data with the Identity Provider"
+                isChecked=idpSync
+                onChange={(_, _) => setIdpSync(_ => !idpSync)}
+                id="idpSync"
+              />
+            </FormGroup>
+            <ActionGroup>
+              <Button
+                variant=`Primary
+                onClick={_ =>
+                  callback(
+                    Hook.UserSettings.{
+                      username: user.username,
+                      fullname,
+                      email,
+                      idp_sync: idpSync,
+                    }
+                    ->Hook.UserSettings.user_encode
+                    ->Some,
+                  )
+                  ->ignore
+                }>
+                "Save"->React.string
+              </Button>
+            </ActionGroup>
+          </Form>
+        </CardBody>
+      </Card>;
     };
   };
 
@@ -109,32 +124,38 @@ module Page = (Fetcher: Dependencies.Fetcher) => {
           )
         };
 
-      <Form>
-        <h1> "API Key"->React.string </h1>
-        message
-        <FormGroup label={"Key"->React.string} fieldId="key">
-          <TextInput value=apiKeyStr isReadOnly=true id="key" />
-        </FormGroup>
-        <ActionGroup>
-          <Button
-            variant=`Primary onClick={_ => callback(Hook.ApiKey.Regenerate)}>
-            "Generate new API key"->React.string
-          </Button>
-          {apiKeyStr == ""
-             ? React.null
-             : <Button
-                 variant=`Primary onClick={_ => callback(Hook.ApiKey.Delete)}>
-                 "Delete API key"->React.string
-               </Button>}
-        </ActionGroup>
-      </Form>;
+      <Card isCompact=true style=boxStyle>
+        <CardTitle style=boxTitleStyle> "API Key" </CardTitle>
+        <CardBody>
+          <Form >
+            message
+            <FormGroup label={"Key"->React.string} fieldId="key">
+              <TextInput value=apiKeyStr isReadOnly=true id="key" />
+            </FormGroup>
+            <ActionGroup>
+              <Button
+                variant=`Primary
+                onClick={_ => callback(Hook.ApiKey.Regenerate)}>
+                "Generate new API key"->React.string
+              </Button>
+              {apiKeyStr == ""
+                 ? React.null
+                 : <Button
+                     variant=`Primary
+                     onClick={_ => callback(Hook.ApiKey.Delete)}>
+                     "Delete API key"->React.string
+                   </Button>}
+            </ActionGroup>
+          </Form>
+        </CardBody>
+      </Card>;
     };
   };
 
   [@react.component]
   let make = (~username: string) => {
     let (state, callback) = Hook.UserSettings.use(username);
-    <>
+    <Stack hasGutter=true>
       {switch (state) {
        | RemoteData.Loading(Some(user))
        | RemoteData.Success(user) => <SettingForm user callback />
@@ -143,6 +164,6 @@ module Page = (Fetcher: Dependencies.Fetcher) => {
        | RemoteData.Failure(title) => <Alert variant=`Danger title />
        }}
       <ApiForm />
-    </>;
+    </Stack>;
   };
 };

@@ -1,4 +1,5 @@
 open Patternfly;
+open Patternfly.Layout;
 
 module Page = {
   [@react.component]
@@ -47,7 +48,7 @@ module Page = {
       </>;
 
     let mkOauthButton = (backend, icon, text) =>
-      <form method="post" action="/auth/login" target="_top">
+      <form key=text method="post" action="/auth/login" target="_top">
         <input type_="hidden" name="back" value={Cauth.getBack()} />
         <input
           type_="hidden"
@@ -115,16 +116,18 @@ module Page = {
       <LoginPage
         footerListVariants=`Inline
         footerListItems
+        brandImgSrc={"data:image/png;base64," ++ info.splash_image_b64data}
         loginTitle="Log in to your account"
         loginSubtitle>
         {authState.auth_request->RemoteData.isLoading
            ? <Spinner /> : React.null}
         authState.auth_request->RemoteApi.renderError
-        {useLocalAccount ? loginForm : externalIdp}
-        <br />
-        <a onClick={_ => toggleLocalAccount(_ => !useLocalAccount)}>
-          "Toggle login form"->React.string
-        </a>
+        <Stack hasGutter=true>
+          {useLocalAccount ? loginForm : externalIdp}
+          <a onClick={_ => toggleLocalAccount(_ => !useLocalAccount)}>
+            "Toggle login form"->React.string
+          </a>
+        </Stack>
       </LoginPage>
     | RemoteData.Success(_) =>
       ReasonReactRouter.push("/");
@@ -132,6 +135,7 @@ module Page = {
     };
   };
 };
+
 
 module Header = {
   [@react.component]
