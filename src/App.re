@@ -305,18 +305,18 @@ module WelcomePage = {
     <Stack hasGutter=true>
       <SplashLogo info />
       <Menu services={info.services} />
-        <Grid hasGutter=true>
-          <GridItem offset=PFTypes.Column._1 span=PFTypes.Column._10>
-            {switch (state) {
-             | RemoteData.NotAsked
-             | RemoteData.Loading(None) => <p> {"Loading..." |> str} </p>
-             | RemoteData.Loading(Some(resources))
-             | RemoteData.Success(resources) =>
-                   <TenantList tenants={resources.tenants} />
-             | RemoteData.Failure(title) => <Alert variant=`Danger title />
-             }}
-          </GridItem>
-        </Grid>
+      <Grid hasGutter=true>
+        <GridItem offset=PFTypes.Column._1 span=PFTypes.Column._10>
+          {switch (state) {
+           | RemoteData.NotAsked
+           | RemoteData.Loading(None) => <p> {"Loading..." |> str} </p>
+           | RemoteData.Loading(Some(resources))
+           | RemoteData.Success(resources) =>
+             <TenantList tenants={resources.tenants} />
+           | RemoteData.Failure(title) => <Alert variant=`Danger title />
+           }}
+        </GridItem>
+      </Grid>
     </Stack>;
   };
 };
@@ -358,6 +358,10 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
       onClick={_ => ReasonReactRouter.push("/")}
     />;
 
+  let getBack = qs => {
+    Webapi.Url.(qs |> URLSearchParams.make |> URLSearchParams.get("back"));
+  };
+
   module MainWithContext = {
     [@react.component]
     let make = (~info: SF.Info.t, ~resourcesHook: Api.resources_hook_t) => {
@@ -377,11 +381,15 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
 
       <Page header>
         <PageSection isFilled=true>
-          {switch (ReasonReactRouter.useUrl().path) {
+          {let reacturl = ReasonReactRouter.useUrl();
+           switch (reacturl.path) {
            | [] => <WelcomePage info resourcesHook />
            | ["project", project_id] =>
              <ProjectPage project_id resourcesHook />
-           | ["login"] => <UserLogin.Page info auth />
+           | ["login"] =>
+             let back = getBack(reacturl.search);
+             <UserLogin.Page info auth back />;
+
            | ["auth", "settings"] =>
              switch (auth) {
              | ({user: Some(user)}, _) =>
