@@ -3,13 +3,15 @@ open Patternfly.Layout;
 
 module Page = {
   [@react.component]
-  let make = (~info: SF.Info.t, ~auth: Auth.t) => {
+  let make = (~info: SF.Info.t, ~auth: Auth.t, ~back: option(string)) => {
     let (authState, authDispatch) = auth;
     // Ensure we are logged-out when rendering the login form
     React.useEffect0(() => {
       authDispatch(Auth.Logout);
       None;
     });
+    let back = Belt.Option.getWithDefault(back, "/");
+    Js.log("Back url: " ++ back);
     let (useLocalAccount, toggleLocalAccount) = React.useState(_ => false);
 
     // Username
@@ -49,7 +51,7 @@ module Page = {
 
     let mkOauthButton = (backend, icon, text) =>
       <form key=text method="post" action="/auth/login" target="_top">
-        <input type_="hidden" name="back" value={Cauth.getBack()} />
+        <input type_="hidden" name="back" value=back />
         <input
           type_="hidden"
           name="method"
@@ -95,6 +97,7 @@ module Page = {
             Cauth.(
               Password({username: usernameValue, password: passwordValue})
             ),
+            back,
           ),
         ),
       );
@@ -135,7 +138,6 @@ module Page = {
     };
   };
 };
-
 
 module Header = {
   [@react.component]

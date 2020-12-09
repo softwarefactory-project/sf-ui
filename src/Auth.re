@@ -6,7 +6,7 @@ and action =
   | Login(loginInfos)
   | Logout
 and loginInfos =
-  | CauthLogin(Cauth.backend)
+  | CauthLogin(Cauth.backend, Cauth.backurl)
 and state = {
   auth_request: RemoteApi.state_t(unit),
   user: option(user),
@@ -31,11 +31,11 @@ module Hook = (Fetcher: Dependencies.Fetcher) => {
       | Login(loginInfos) =>
         // User tries to login
         switch (loginInfos) {
-        | CauthLogin(cauthInfos) =>
+        | CauthLogin(cauthInfos, back) =>
           // Update the current backend
           setAuthBackend(_ => Cauth);
           // Dispatch cauth action
-          cauthDispatch(cauthInfos->Cauth.Login);
+          cauthDispatch(Cauth.Login(cauthInfos, back));
         }
       | Logout =>
         // User logout

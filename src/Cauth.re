@@ -3,8 +3,9 @@
 // The hook returns this type t:
 type t = (state, action => unit)
 and state = RemoteApi.state_t(unit)
+and backurl = string
 and action =
-  | Login(backend)
+  | Login(backend, backurl)
   | Logout
 and backend =
   | Password(credentials)
@@ -40,9 +41,6 @@ let isDevelopment =
   | _ => false
   };
 
-// TODO: get this from query string
-let getBack = () => isDevelopment ? "/" : "https://sftests.com/";
-
 let backendMethod =
   fun
   | Password(_) => "Password"
@@ -53,23 +51,24 @@ let backendMethod =
   | OpenIDConnect => "OpenIDConnect"
   | SAML => "SAML2";
 
-let idpParams = method => {
+let idpParams = (back, method) => {
   method,
-  back: getBack(),
+  back,
   args: {
     username: None,
     password: None,
   },
 };
 
-let createParams = (backend: backend): cauthPost =>
+let createParams = (backend: backend, back: string): cauthPost => {
   // TODO: update this code because only the password method params are used,
   // the externalidp are submited through a post form
   // because xhr request doesn't seems to support location redirect
+  let idpParams = method => idpParams(back, method);
   switch (backend) {
   | Password(creds) => {
       method: "Password",
-      back: getBack(),
+      back,
       args: {
         username: creds.username->Some,
         password: creds.password->Some,
@@ -82,7 +81,7 @@ let createParams = (backend: backend): cauthPost =>
   | OpenIDConnect => "OpenIDConnect"->idpParams
   | SAML => "SAML2"->idpParams
   };
-
+};
 // Simulate the result of a cauth authentication success
 let fakeLogin = (backend: backend) => {
   switch (backend) {
@@ -106,7 +105,7 @@ let fakeLogin = (backend: backend) => {
     )
   | _ => ()
   };
-  ReasonReactRouter.push(getBack());
+  ReasonReactRouter.push("/");
 };
 
 let getUser = SFCookie.CauthCookie.getUser;
@@ -122,12 +121,12 @@ module Hook = (Fetcher: Dependencies.Fetcher) => {
     // And returns this convenient function to trigger state update
     let authenticate = (action: action): unit => {
       switch (action) {
-      | Login(backend) =>
+      | Login(backend, back) =>
         isDevelopment
           ? fakeLogin(backend)
           // Here we just post, and we'll be redirected if the request succeed
           : RemoteApi.justPost(
-              "/auth/login", createParams(backend)->cauthPost_encode, r =>
+              "/auth/login", createParams(backend, back)->cauthPost_encode, r =>
               state->updateRemoteData(r)->set_state
             )
             ->ignore
