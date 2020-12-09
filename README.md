@@ -34,3 +34,15 @@ Distribute with:
 yarn dist
 # Open browser in dist/
 ```
+
+## RPM Build
+
+```
+rm -Rf dist
+yarn dist
+tar -czf dist.tar.gz dist
+mkdir -p ~/rpmbuild/RPMS ~/rpmbuild/SOURCES ~/rpmbuild/SRPMS
+mv dist.tar.gz ~/rpmbuild/SOURCES/
+yum install -y rpm-build
+rpmbuild -ba sf-ui.spec
+```
