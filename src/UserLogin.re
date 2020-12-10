@@ -133,7 +133,9 @@ module Page = {
         </Stack>
       </LoginPage>
     | RemoteData.Success(_) =>
-      ReasonReactRouter.push("/");
+      ReasonReactRouter.replace(back);
+      // Force a react router call is not enough
+      Webapi.Dom.(Location.reload(location));
       <p> "If you are not redirected, click /"->React.string </p>;
     };
   };
