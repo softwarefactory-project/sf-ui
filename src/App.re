@@ -361,6 +361,7 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
   let getBack = qs => {
     Webapi.Url.(qs |> URLSearchParams.make |> URLSearchParams.get("back"));
   };
+  let getBaseUrl = () => Webapi.Dom.(Location.origin(location));
 
   module MainWithContext = {
     [@react.component]
@@ -387,9 +388,12 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
            | ["project", project_id] =>
              <ProjectPage project_id resourcesHook />
            | ["login"] =>
-             let back = getBack(reacturl.search);
+             let back =
+               Belt.Option.getWithDefault(
+                 getBack(reacturl.search),
+                 getBaseUrl(),
+               );
              <UserLogin.Page info auth back />;
-
            | ["auth", "settings"] =>
              switch (auth) {
              | ({user: Some(user)}, _) =>
