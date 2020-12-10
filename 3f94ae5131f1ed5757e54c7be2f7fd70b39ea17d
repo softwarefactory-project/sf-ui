@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "008d7efa_04c56186",
+        "filename": "src/UserLogin.re",
+        "patchSetId": 1
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 7
+      },
+      "writtenOn": "2020-12-10T18:34:02Z",
+      "side": 1,
+      "message": "left-over debug?",
+      "range": {
+        "startLine": 14,
+        "startChar": 4,
+        "endLine": 14,
+        "endChar": 10
+      },
+      "revId": "3f94ae5131f1ed5757e54c7be2f7fd70b39ea17d",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
