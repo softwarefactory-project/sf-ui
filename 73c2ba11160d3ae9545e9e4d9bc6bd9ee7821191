@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "4ac935cd_c7e84634",
+        "filename": "README.md",
+        "patchSetId": 1
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 7
+      },
+      "writtenOn": "2020-12-10T18:32:32Z",
+      "side": 1,
+      "message": "Technically there is a job for that, maybe we can enable it?",
+      "revId": "73c2ba11160d3ae9545e9e4d9bc6bd9ee7821191",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
