@@ -389,7 +389,7 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
            | ["login"] =>
              let back = getBack(reacturl.search);
              <UserLogin.Page info auth back />;
-
+           | ["logout"] => <UserLogin.Logout auth />
            | ["auth", "settings"] =>
              switch (auth) {
              | ({user: Some(user)}, _) =>
