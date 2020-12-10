@@ -3,14 +3,13 @@ open Patternfly.Layout;
 
 module Page = {
   [@react.component]
-  let make = (~info: SF.Info.t, ~auth: Auth.t, ~back: option(string)) => {
+  let make = (~info: SF.Info.t, ~auth: Auth.t, ~back: string) => {
     let (authState, authDispatch) = auth;
     // Ensure we are logged-out when rendering the login form
     React.useEffect0(() => {
       authDispatch(Auth.Logout);
       None;
     });
-    let back = Belt.Option.getWithDefault(back, "/");
     let (useLocalAccount, toggleLocalAccount) = React.useState(_ => false);
 
     // Username
@@ -132,7 +131,9 @@ module Page = {
         </Stack>
       </LoginPage>
     | RemoteData.Success(_) =>
-      ReasonReactRouter.push("/");
+      ReasonReactRouter.push(back);
+      // // Force a react router call is not enough
+      Webapi.Dom.(Location.reload(location));
       <p> "If you are not redirected, click /"->React.string </p>;
     };
   };
