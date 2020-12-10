@@ -140,6 +140,19 @@ module Page = {
   };
 };
 
+module Logout = {
+  [@react.component]
+  let make = (~auth: Auth.t) => {
+    React.useEffect0(() => {
+      let (_, dispatch) = auth;
+      dispatch(Auth.Logout);
+      ReasonReactRouter.replace("/");
+      Some(() => ());
+    });
+    <p> "Logout in progress ..."->React.string </p>;
+  };
+};
+
 module Header = {
   [@react.component]
   let make = (~auth: Auth.t) => {
@@ -160,7 +173,8 @@ module Header = {
              </PageHeaderToolsItem>
              <PageHeaderToolsItem>
                <Button
-                 variant=`Secondary onClick={_ => dispatch(Auth.Logout)}>
+                 variant=`Secondary
+                 onClick={_ => ReasonReactRouter.push("/logout")}>
                  {"Logout" |> React.string}
                </Button>
              </PageHeaderToolsItem>
