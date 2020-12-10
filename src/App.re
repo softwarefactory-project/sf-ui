@@ -394,6 +394,7 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
                  getBaseUrl(),
                );
              <UserLogin.Page info auth back />;
+           | ["logout"] => <UserLogin.Logout auth />
            | ["auth", "settings"] =>
              switch (auth) {
              | ({user: Some(user)}, _) =>
