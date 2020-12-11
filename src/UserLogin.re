@@ -157,7 +157,7 @@ module Header = {
   let make = (~auth: Auth.t) => {
     <PageHeaderToolsGroup>
       {switch (auth) {
-       | ({auth_request: _, user: Some({name})}, dispatch) =>
+       | ({auth_request: _, user: Some({name})}, _) =>
          <>
            <PageHeaderToolsGroup>
              <PageHeaderToolsItem>

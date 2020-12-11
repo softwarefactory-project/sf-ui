@@ -63,6 +63,8 @@ let displayImg = (width: string, height, src: string, alt: string) => {
   />;
 };
 
+let getBaseUrl = () => Webapi.Dom.(Location.origin(location));
+
 module Asset = {
   // require binding does not support complex string manipulation
   [@bs.val] external require: string => string = "require";
@@ -346,6 +348,42 @@ module ProjectPage = {
   };
 };
 
+module QuickLinksMenu = {
+  let quickLinkItem = (text: string, link: string) =>
+    <div
+      onClick={_ => {
+        Webapi.Dom.(
+          {ReasonReactRouter.push(link);
+           Location.reload(location)}
+        )
+      }}>
+      <ApplicationLauncherItem
+        key=text
+        component={
+          <ApplicationLauncherText>
+            text->React.string
+          </ApplicationLauncherText>
+        }
+      />
+    </div>;
+  let quickLinkItems =
+    [
+      ("SF Manual", getBaseUrl() ++ "/docs/"),
+      ("Zuul Manual", getBaseUrl() ++ "/docs/zuul"),
+      ("Nodepool Manual", getBaseUrl() ++ "/docs/nodepool"),
+    ]
+    ->Belt.List.map(((t, l)) => quickLinkItem(t, l))
+    |> Belt.List.toArray;
+
+  [@react.component]
+  let make = () => {
+    let (state, setState) = React.useState(() => false);
+    <div onClick={_ => setState(_ => !state)}>
+      <ApplicationLauncher isOpen=state items=quickLinkItems />
+    </div>;
+  };
+};
+
 module Main = (Fetcher: Dependencies.Fetcher) => {
   module Auth' = Auth.Hook(Fetcher);
   module Hook = Api.Hook(Fetcher);
@@ -361,7 +399,6 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
   let getBack = qs => {
     Webapi.Url.(qs |> URLSearchParams.make |> URLSearchParams.get("back"));
   };
-  let getBaseUrl = () => Webapi.Dom.(Location.origin(location));
 
   module MainWithContext = {
     [@react.component]
@@ -372,9 +409,7 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
           logo={getHeaderLogo(info)}
           headerTools={
             <PageHeaderTools>
-              <PageHeaderToolsItem>
-                <Button variant=`Plain> <Icons.Help /> </Button>
-              </PageHeaderToolsItem>
+              <PageHeaderToolsItem> <QuickLinksMenu /> </PageHeaderToolsItem>
               <UserLogin.Header auth />
             </PageHeaderTools>
           }
