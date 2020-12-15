@@ -6,3 +6,11 @@
               - software-factory/re-sf
               - software-factory/re-patternfly
     gate: *jobs
+    release:
+      jobs:
+        - npm-rpm-publish:
+            required-projects:
+              - software-factory/re-sf
+              - software-factory/re-patternfly
+            vars:
+              scratch: false
