@@ -5,4 +5,8 @@
             required-projects:
               - software-factory/re-sf
               - software-factory/re-patternfly
+        - npm-rpm-publish:
+            required-projects:
+              - software-factory/re-sf
+              - software-factory/re-patternfly
     gate: *jobs

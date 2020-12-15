@@ -11,7 +11,7 @@ Summary:	The software-factory web interface
 
 License:	APACHE-2
 URL:	        https://www.softwarefactory-project.io
-Source0:	dist.tar.gz
+Source0:	HEAD.tar.gz
 BuildArch:      noarch
 
 %description
