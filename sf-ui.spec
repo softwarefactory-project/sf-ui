@@ -5,7 +5,7 @@
 %define _binary_payload w9.gzdio
 
 Name:		sf-ui
-Version:	0.1.1
+Version:	0.1.2
 Release:	1%{?dist}
 Summary:	The software-factory web interface
 

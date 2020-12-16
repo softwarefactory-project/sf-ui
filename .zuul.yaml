@@ -13,4 +13,4 @@
               - software-factory/re-sf
               - software-factory/re-patternfly
             vars:
-              scratch: false
+              scratch_build: false
