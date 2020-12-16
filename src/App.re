@@ -363,6 +363,46 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
   };
   let getBaseUrl = () => Webapi.Dom.(Location.origin(location));
 
+  module Footer = {
+    let renderLink = (l: SF.Info.link) =>
+      <p> <a href={l.link}> l.name->React.string </a> </p>;
+
+    [@react.component]
+    let make = (~info: SF.Info.t) => {
+      <Stack hasGutter=true>
+        <Bullseye>
+          <Grid hasGutter=true>
+            <GridItem span=PFTypes.Column._4>
+              <Bullseye>
+                <Stack>
+                  <p> <b> "DOCUMENTATION"->React.string </b> </p>
+                  {info.documentation_links->renderList(renderLink)}
+                </Stack>
+              </Bullseye>
+            </GridItem>
+            <GridItem span=PFTypes.Column._4>
+              <Bullseye>
+                <Stack>
+                  <p> <b> "PLATFORM"->React.string </b> </p>
+                  <p> {("version: " ++ info.version)->React.string} </p>
+                  {info.status_links->renderList(renderLink)}
+                </Stack>
+              </Bullseye>
+            </GridItem>
+            <GridItem span=PFTypes.Column._4>
+              <Bullseye>
+                <Stack>
+                  <p> <b> "CONTACTS"->React.string </b> </p>
+                  {info.contact_links->renderList(renderLink)}
+                </Stack>
+              </Bullseye>
+            </GridItem>
+          </Grid>
+        </Bullseye>
+      </Stack>;
+    };
+  };
+
   module MainWithContext = {
     [@react.component]
     let make = (~info: SF.Info.t, ~resourcesHook: Api.resources_hook_t) => {
@@ -403,6 +443,9 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
              }
            | _ => <p> {"Not found" |> str} </p>
            }}
+        </PageSection>
+        <PageSection variant=`Darker isFilled=true>
+          <Footer info />
         </PageSection>
       </Page>;
     };
