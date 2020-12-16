@@ -157,28 +157,26 @@ module Header = {
   let make = (~auth: Auth.t) => {
     <PageHeaderToolsGroup>
       {switch (auth) {
-       | ({auth_request: _, user: Some({name})}, dispatch) =>
-         <>
-           <PageHeaderToolsGroup>
-             <PageHeaderToolsItem>
-               <p> {("Welcome " ++ name)->React.string} </p>
-             </PageHeaderToolsItem>
-             <PageHeaderToolsItem>
-               <Button
-                 variant=`Plain
-                 onClick={_ => ReasonReactRouter.push("/auth/settings")}>
-                 <Icons.Cog />
-               </Button>
-             </PageHeaderToolsItem>
-             <PageHeaderToolsItem>
-               <Button
-                 variant=`Secondary
-                 onClick={_ => ReasonReactRouter.push("/logout")}>
-                 {"Logout" |> React.string}
-               </Button>
-             </PageHeaderToolsItem>
-           </PageHeaderToolsGroup>
-         </>
+       | ({auth_request: _, user: Some({name})}, _) =>
+         <PageHeaderToolsGroup>
+           <PageHeaderToolsItem>
+             <p> {("Welcome " ++ name)->React.string} </p>
+           </PageHeaderToolsItem>
+           <PageHeaderToolsItem>
+             <Button
+               variant=`Plain
+               onClick={_ => ReasonReactRouter.push("/auth/settings")}>
+               <Icons.Cog />
+             </Button>
+           </PageHeaderToolsItem>
+           <PageHeaderToolsItem>
+             <Button
+               variant=`Secondary
+               onClick={_ => ReasonReactRouter.push("/logout")}>
+               {"Logout" |> React.string}
+             </Button>
+           </PageHeaderToolsItem>
+         </PageHeaderToolsGroup>
        | (_, dispatch) =>
          <Button
            variant=`Secondary

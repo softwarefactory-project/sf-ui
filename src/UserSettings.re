@@ -127,7 +127,7 @@ module Page = (Fetcher: Dependencies.Fetcher) => {
       <Card isCompact=true style=boxStyle>
         <CardTitle style=boxTitleStyle> "API Key" </CardTitle>
         <CardBody>
-          <Form >
+          <Form>
             message
             <FormGroup label={"Key"->React.string} fieldId="key">
               <TextInput value=apiKeyStr isReadOnly=true id="key" />
