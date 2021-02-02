@@ -100,7 +100,7 @@ module Service = {
       switch (name) {
       | "gerrit" => displayLogo(Asset.Logo.gerrit, "Gerrit")
       | "zuul" => displayLogo(Asset.Logo.zuul, "Zuul")
-      | "paste" => displayLogo(Asset.Logo.paste, "Paste")
+      | "lodgeit" => displayLogo(Asset.Logo.paste, "Paste")
       | "etherpad" => displayLogo(Asset.Logo.etherpad, "Eherpad")
       | "kibana" => displayLogo(Asset.Logo.kibana, "Kibana")
       | "mumble" => displayLogo(Asset.Logo.mumble, "Mumble")

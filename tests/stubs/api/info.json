@@ -32,6 +32,10 @@
       "path": "/mumble"
     },
     {
+      "name": "lodgeit",
+      "path": "/paste"
+    },
+    {
       "name": "kibana",
       "path": "/app/analytics"
     }
