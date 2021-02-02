@@ -28,6 +28,10 @@
       "path": "/cgit"
     },
     {
+      "name": "hound",
+      "path": "/codesearch"
+    },
+    {
       "name": "mumble",
       "path": "/mumble"
     },

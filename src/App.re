@@ -79,6 +79,7 @@ module Asset = {
     let mumble = logo("Mumble_icon.svg");
     let cgit = logo("CGIT_icon.svg");
     let repoxplorer = logo("repoXplorer_icon.svg");
+    let hound = logo("Hound_icon.svg");
     let avatar =
       require(
         "@patternfly/react-core/src/components/Avatar/examples/avatarImg.svg",
@@ -106,6 +107,7 @@ module Service = {
       | "kibana" => displayLogo(Asset.Logo.kibana, "Kibana")
       | "mumble" => displayLogo(Asset.Logo.mumble, "Mumble")
       | "repoxplorer" => displayLogo(Asset.Logo.repoxplorer, "Repoxplorer")
+      | "hound" => displayLogo(Asset.Logo.hound, "Hound")
       | "cgit" => displayLogo(Asset.Logo.cgit, "CGIT")
       | _ => React.null
       };
