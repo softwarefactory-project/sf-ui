@@ -46,7 +46,7 @@ let testComponentHook =
     ) => {
   toActualPromise(
     actAsync(() =>
-      Js.Promise.resolve(ReactDOMRe.render(component, container))
+      Js.Promise.resolve(ReactDOM.render(component, container))
     ),
   )
   |> Js.Promise.then_(() =>

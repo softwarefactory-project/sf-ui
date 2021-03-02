@@ -22,7 +22,7 @@
   ],
   "suffix": ".bs.js",
   "bs-dependencies": [
-    "reason-react",
+    "@rescript/react",
     "bs-fetch",
     "decco",
     "remotedata-re",

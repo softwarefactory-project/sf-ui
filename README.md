@@ -11,27 +11,27 @@ for dep in re-sf re-patternfly; do
   git clone https://softwarefactory-project.io/r/software-factory/${depo} ../${dep}
 done
 podman run --rm quay.io/software-factory/nodejs-builder cat /usr/libexec/shake/yarn.lock > yarn.lock
-yarn install
-yarn start
+pnpm install --shamefully-hoist
+pnpm start
 ```
 
 Run test with:
 
 ```
-yarn test
+pnpm test
 ```
 
 Setup live hot-reload:
 
 ```
-yarn serve
+pnpm serve
 # Open browser on http://localhost:1234
 ```
 
 Distribute with:
 
 ```
-yarn dist
+pnpm dist
 # Open browser in dist/
 ```
 
@@ -39,7 +39,7 @@ yarn dist
 
 ```
 rm -Rf dist
-yarn dist
+pnpm dist
 tar -czf dist.tar.gz dist
 mkdir -p ~/rpmbuild/RPMS ~/rpmbuild/SOURCES ~/rpmbuild/SRPMS
 mv dist.tar.gz ~/rpmbuild/SOURCES/

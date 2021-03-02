@@ -176,7 +176,7 @@ module SRsCard = {
 module ProjectCard = {
   let handleClick =
       (project_id: string, isClickable: bool, _: ReactEvent.Mouse.t) => {
-    isClickable ? ReasonReactRouter.push("project/" ++ project_id) : ();
+    isClickable ? RescriptReactRouter.push("project/" ++ project_id) : ();
   };
   let renderAttribute =
       ((label: string, attribute: attribute_type)): React.element =>
@@ -359,7 +359,7 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
     <Brand
       alt="SF"
       src={"data:image/png;base64," ++ info.header_logo_b64data}
-      onClick={_ => ReasonReactRouter.push("/")}
+      onClick={_ => RescriptReactRouter.push("/")}
     />;
 
   let getBack = qs => {
@@ -426,7 +426,7 @@ module Main = (Fetcher: Dependencies.Fetcher) => {
 
       <Page header>
         <PageSection isFilled=true>
-          {let reacturl = ReasonReactRouter.useUrl();
+          {let reacturl = RescriptReactRouter.useUrl();
            switch (reacturl.path) {
            | [] => <WelcomePage info resourcesHook />
            | ["project", project_id] =>
