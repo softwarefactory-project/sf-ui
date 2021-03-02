@@ -20,6 +20,10 @@
       "path": "/zuul"
     },
     {
+      "name": "nodepool",
+      "path": "/nodepool"
+    },
+    {
       "name": "etherpad",
       "path": "/etherpad"
     },
