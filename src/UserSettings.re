@@ -1,7 +1,7 @@
 open Patternfly;
 open Patternfly.Layout;
 
-module Page = (Fetcher: Dependencies.Fetcher) => {
+module Page = (Fetcher: RemoteAPI.HTTPClient) => {
   module Hook = Api.Hook(Fetcher);
 
   let boxStyle = ReactDOM.Style.make(~borderRadius="10px", ());

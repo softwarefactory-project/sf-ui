@@ -25,7 +25,7 @@ module StubFetch = {
   };
   let put = post;
   let delete = (_url: string) =>
-    Fetch.Response.redirect("test")->Ok |> Js.Promise.resolve;
+    Fetch.Response.redirect("test")->ignore->Ok |> Js.Promise.resolve;
 };
 
 module StubCookieFetcher: SFCookie.CookieFetcher = {
