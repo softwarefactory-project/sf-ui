@@ -73,6 +73,7 @@ module Asset = {
     // the assets
     let gerrit = logo("Gerrit_icon.svg");
     let zuul = logo("Zuul_icon.svg");
+    let nodepool = logo("Nodepool_icon.svg");
     let paste = logo("Paste_icon.svg");
     let etherpad = logo("Etherpad_icon.svg");
     let kibana = logo("Kibana_icon.svg");
@@ -102,6 +103,7 @@ module Service = {
       switch (name) {
       | "gerrit" => displayLogo(Asset.Logo.gerrit, "Gerrit")
       | "zuul" => displayLogo(Asset.Logo.zuul, "Zuul")
+      | "nodepool" => displayLogo(Asset.Logo.nodepool, "Nodepool")
       | "lodgeit" => displayLogo(Asset.Logo.paste, "Paste")
       | "etherpad" => displayLogo(Asset.Logo.etherpad, "Eherpad")
       | "kibana" => displayLogo(Asset.Logo.kibana, "Kibana")
