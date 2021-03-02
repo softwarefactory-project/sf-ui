@@ -352,7 +352,7 @@ module ProjectPage = {
   };
 };
 
-module Main = (Fetcher: Dependencies.Fetcher) => {
+module Main = (Fetcher: RemoteAPI.HTTPClient) => {
   module Auth' = Auth.Hook(Fetcher);
   module Hook = Api.Hook(Fetcher);
   module UserSettingsPage = UserSettings.Page(Fetcher);

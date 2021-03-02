@@ -17,6 +17,7 @@
     "@rescript/react": "^0.10.1",
     "@softwarefactory-project/re-patternfly": "../re-patternfly",
     "@softwarefactory-project/re-sf": "../re-sf",
+    "@softwarefactory-project/res-remoteapi": "../res-remoteapi",
     "bs-fetch": "^0.6.2",
     "bs-webapi": "^0.19.1",
     "decco": "^1.3.0",

@@ -17,7 +17,7 @@ and backend =
   | Cauth
   | Keycloak;
 
-module Hook = (Fetcher: Dependencies.Fetcher) => {
+module Hook = (Fetcher: RemoteAPI.HTTPClient) => {
   module Cauth' = Cauth.Hook(Fetcher);
 
   let use = (~defaultBackend: backend): t => {

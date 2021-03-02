@@ -110,7 +110,7 @@ let fakeLogin = (backend: backend) => {
 
 let getUser = SFCookie.CauthCookie.getUser;
 
-module Hook = (Fetcher: Dependencies.Fetcher) => {
+module Hook = (Fetcher: RemoteAPI.HTTPClient) => {
   open RemoteApi;
   module RemoteApi = RemoteApi.API(Fetcher);
 

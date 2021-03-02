@@ -7,7 +7,7 @@ let apiKeyEndpoint = "/auth/apikey" ++ (Cauth.isDevelopment ? ".json" : "");
 let userSettingEndpoint =
   "/manage/services_users" ++ (Cauth.isDevelopment ? ".json" : "");
 
-module Hook = (Fetcher: Dependencies.Fetcher) => {
+module Hook = (Fetcher: RemoteAPI.HTTPClient) => {
   open RemoteApi;
   module RemoteApi = RemoteApi.API(Fetcher);
 

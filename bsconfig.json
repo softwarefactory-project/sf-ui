@@ -23,6 +23,7 @@
   "suffix": ".bs.js",
   "bs-dependencies": [
     "@rescript/react",
+    "@softwarefactory-project/res-remoteapi",
     "bs-fetch",
     "decco",
     "remotedata-re",

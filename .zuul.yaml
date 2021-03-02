@@ -5,6 +5,7 @@
             required-projects:
               - software-factory/re-sf
               - software-factory/re-patternfly
+              - software-factory/res-remoteapi
     gate: *jobs
     # uncomment when job is ready
     # release:
