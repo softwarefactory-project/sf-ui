@@ -99,7 +99,7 @@ let debugChain = (r, m) => {
 };
 
 // The low-level module
-module API = (Fetcher: Dependencies.Fetcher) => {
+module API = (Fetcher: RemoteAPI.HTTPClient) => {
   let getMaybe =
       (
         url: string,
