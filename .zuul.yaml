@@ -1,16 +1,17 @@
 - project:
     check: &jobs
       jobs:
-        - npm-test:
+        - pnpm-test:
             required-projects:
               - software-factory/re-sf
               - software-factory/re-patternfly
     gate: *jobs
     release:
       jobs:
-        - npm-rpm-publish:
+        - pnpm-rpm-publish:
             required-projects:
               - software-factory/re-sf
               - software-factory/re-patternfly
             vars:
               scratch_build: false
+              pnpm_install: "--shamefully-hoist"

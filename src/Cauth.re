@@ -105,7 +105,7 @@ let fakeLogin = (backend: backend) => {
     )
   | _ => ()
   };
-  ReasonReactRouter.push("/");
+  RescriptReactRouter.push("/");
 };
 
 let getUser = SFCookie.CauthCookie.getUser;

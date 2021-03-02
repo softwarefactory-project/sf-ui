@@ -131,7 +131,7 @@ module Page = {
         </Stack>
       </LoginPage>
     | RemoteData.Success(_) =>
-      ReasonReactRouter.push(back);
+      RescriptReactRouter.push(back);
       // // Force a react router call is not enough
       Webapi.Dom.(Location.reload(location));
       <p> "If you are not redirected, click /"->React.string </p>;
@@ -145,7 +145,7 @@ module Logout = {
     React.useEffect0(() => {
       let (_, dispatch) = auth;
       dispatch(Auth.Logout);
-      ReasonReactRouter.replace("/");
+      RescriptReactRouter.replace("/");
       Some(() => ());
     });
     <p> "Logout in progress ..."->React.string </p>;
@@ -165,14 +165,14 @@ module Header = {
            <PageHeaderToolsItem>
              <Button
                variant=`Plain
-               onClick={_ => ReasonReactRouter.push("/auth/settings")}>
+               onClick={_ => RescriptReactRouter.push("/auth/settings")}>
                <Icons.Cog />
              </Button>
            </PageHeaderToolsItem>
            <PageHeaderToolsItem>
              <Button
                variant=`Secondary
-               onClick={_ => ReasonReactRouter.push("/logout")}>
+               onClick={_ => RescriptReactRouter.push("/logout")}>
                {"Logout" |> React.string}
              </Button>
            </PageHeaderToolsItem>
@@ -183,7 +183,7 @@ module Header = {
            onClick={_ => {
              // Ensure we are logged-out when clicking login.
              dispatch(Auth.Logout);
-             ReasonReactRouter.push("/login");
+             RescriptReactRouter.push("/login");
            }}>
            {"Login" |> React.string}
          </Button>
