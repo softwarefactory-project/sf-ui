@@ -7,12 +7,6 @@ let renderIfSome = (x: option('t), f: 't => React.element) =>
   | Some(x') => f(x')
   };
 
-let notEmpty = xs =>
-  switch (xs) {
-  | [] => false
-  | _ => true
-  };
-
 let renderIf = (pred: bool, elem: React.element) => pred ? elem : React.null;
 
 let renderIfNot = pred => renderIf(!pred);
@@ -379,7 +373,7 @@ module SFAbout = {
         </TextListItem>
         <TextListItem component=`Dd> info.version->React.string </TextListItem>
         {info.links.contact
-         ->notEmpty
+         ->UserLogin.notEmpty
          ->renderIf(
              <>
                <TextListItem component=`Dt>
@@ -435,7 +429,7 @@ module Main = (Fetcher: RemoteAPI.HTTPClient) => {
               </Bullseye>
             </GridItem>
             {info.links.contact
-             ->notEmpty
+             ->UserLogin.notEmpty
              ->renderIf(
                  <GridItem span=PFTypes.Column._4>
                    <Bullseye>

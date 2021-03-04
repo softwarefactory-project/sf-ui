@@ -1,6 +1,12 @@
 open Patternfly;
 open Patternfly.Layout;
 
+let notEmpty = xs =>
+  switch (xs) {
+  | [] => false
+  | _ => true
+  };
+
 module Page = {
   [@react.component]
   let make = (~info: SF.Info.t, ~auth: Auth.t, ~back: string) => {
@@ -20,9 +26,19 @@ module Page = {
     let (passwordValue, setPasswordValue) = React.useState(_ => "");
     let onChangePassword = (value, _) => setPasswordValue(_ => value);
 
+    // Is idp available
+    let idpAvailable =
+      info.auths.oauth->notEmpty || info.auths.other->notEmpty;
+
     let loginSubtitle =
-      "Sign in with "
-      ++ (useLocalAccount ? "you username and password" : "external account");
+      if (useLocalAccount) {
+        "Sign in with your username and password";
+      } else if (idpAvailable) {
+        "Sign in with your external account";
+      } else {
+        "Only internal accounts are available";
+      };
+
     let footerListItems =
       <>
         <ListItem>
