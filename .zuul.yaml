@@ -6,13 +6,12 @@
               - software-factory/re-sf
               - software-factory/re-patternfly
     gate: *jobs
-    # uncomment when job is ready
-    # release:
-    #   jobs:
-    #     - pnpm-rpm-publish:
-    #         required-projects:
-    #           - software-factory/re-sf
-    #           - software-factory/re-patternfly
-    #         vars:
-    #           scratch_build: false
-    #           pnpm_install: "--shamefully-hoist"
+    release:
+      jobs:
+        - pnpm-rpm-publish:
+            required-projects:
+              - software-factory/re-sf
+              - software-factory/re-patternfly
+            vars:
+              scratch_build: false
+              pnpm_install: "--shamefully-hoist"
