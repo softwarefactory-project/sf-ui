@@ -5,7 +5,7 @@
 %define _binary_payload w9.gzdio
 
 Name:		sf-ui
-Version:	0.1.4
+Version:	0.2.0
 Release:	1%{?dist}
 Summary:	The software-factory web interface
 
@@ -24,12 +24,15 @@ The software-factory web interface
 # Built outside
 
 %install
-install -d -m 755 %{buildroot}/var/www/
-mv * %{buildroot}/var/www/
+install -d -m 755 %{buildroot}/usr/share/sf-ui
+mv * %{buildroot}/usr/share/sf-ui/
 
 %files
-/var/www/
+/usr/share/sf-ui
 
 %changelog
-* Wed Oct  7 2020 Tristan Cacqueray <tdecacqu@redhat.com>
+* Thu Mar  4 2021 Tristan Cacqueray <tdecacqu@redhat.com> - 0.2.0-1
+- Update sf-ui file locations
+
+* Wed Oct  7 2020 Tristan Cacqueray <tdecacqu@redhat.com> - 0.1.0-1
 - Initial packaging
