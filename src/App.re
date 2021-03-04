@@ -7,6 +7,12 @@ let renderIfSome = (x: option('t), f: 't => React.element) =>
   | Some(x') => f(x')
   };
 
+let notEmpty = xs =>
+  switch (xs) {
+  | [] => false
+  | _ => true
+  };
+
 let renderIf = (pred: bool, elem: React.element) => pred ? elem : React.null;
 
 let renderIfNot = pred => renderIf(!pred);
@@ -16,6 +22,9 @@ let listToReactArray = xs => xs->Belt.List.toArray->React.array;
 let renderList = (xs, f) => xs->Belt.List.map(f)->listToReactArray;
 
 let str = React.string;
+
+let renderLink = (l: SF.Info.link) =>
+  <p> <a href={l.link}> l.name->React.string </a> </p>;
 
 type attribute_type =
   | Flat(string)
@@ -352,6 +361,35 @@ module ProjectPage = {
   };
 };
 
+module SFAbout = {
+  [@react.component]
+  let make = (~info: SF.Info.t, ~isOpen: bool, ~onClose: unit => unit) =>
+    <AboutModal
+      isOpen
+      onClose
+      brandImageAlt="SF"
+      brandImageSrc={"data:image/png;base64," ++ info.header_logo_b64data}>
+      <TextList component=`Dl>
+        <TextListItem component=`Dt>
+          "Software Factory Version"->React.string
+        </TextListItem>
+        <TextListItem component=`Dd> info.version->React.string </TextListItem>
+        {info.links.contact
+         ->notEmpty
+         ->renderIf(
+             <>
+               <TextListItem component=`Dt>
+                 "Contacts"->React.string
+               </TextListItem>
+               <TextListItem component=`Dd>
+                 {info.links.contact->renderList(renderLink)}
+               </TextListItem>
+             </>,
+           )}
+      </TextList>
+    </AboutModal>;
+};
+
 module Main = (Fetcher: RemoteAPI.HTTPClient) => {
   module Auth' = Auth.Hook(Fetcher);
   module Hook = Api.Hook(Fetcher);
@@ -370,9 +408,6 @@ module Main = (Fetcher: RemoteAPI.HTTPClient) => {
   let getBaseUrl = () => Webapi.Dom.(Location.origin(location));
 
   module Footer = {
-    let renderLink = (l: SF.Info.link) =>
-      <p> <a href={l.link}> l.name->React.string </a> </p>;
-
     [@react.component]
     let make = (~info: SF.Info.t) => {
       <Stack hasGutter=true>
@@ -395,14 +430,18 @@ module Main = (Fetcher: RemoteAPI.HTTPClient) => {
                 </Stack>
               </Bullseye>
             </GridItem>
-            <GridItem span=PFTypes.Column._4>
-              <Bullseye>
-                <Stack>
-                  <p> <b> "CONTACTS"->React.string </b> </p>
-                  {info.links.contact->renderList(renderLink)}
-                </Stack>
-              </Bullseye>
-            </GridItem>
+            {info.links.contact
+             ->notEmpty
+             ->renderIf(
+                 <GridItem span=PFTypes.Column._4>
+                   <Bullseye>
+                     <Stack>
+                       <p> <b> "CONTACTS"->React.string </b> </p>
+                       {info.links.contact->renderList(renderLink)}
+                     </Stack>
+                   </Bullseye>
+                 </GridItem>,
+               )}
           </Grid>
         </Bullseye>
       </Stack>;
@@ -413,13 +452,16 @@ module Main = (Fetcher: RemoteAPI.HTTPClient) => {
     [@react.component]
     let make = (~info: SF.Info.t, ~resourcesHook: Api.resources_hook_t) => {
       let auth = Auth'.use(~defaultBackend=Auth.Cauth);
+      let (modal, setModal) = React.useState(_ => false);
       let header =
         <PageHeader
           logo={getHeaderLogo(info)}
           headerTools={
             <PageHeaderTools>
               <PageHeaderToolsItem>
-                <Button variant=`Plain> <Icons.Help /> </Button>
+                <Button variant=`Plain onClick={_ => setModal(_ => true)}>
+                  <Icons.Help />
+                </Button>
               </PageHeaderToolsItem>
               <UserLogin.Header auth />
             </PageHeaderTools>
@@ -450,6 +492,7 @@ module Main = (Fetcher: RemoteAPI.HTTPClient) => {
            | _ => <p> {"Not found" |> str} </p>
            }}
         </PageSection>
+        <SFAbout info isOpen=modal onClose={() => setModal(_ => false)} />
         <PageSection variant=`Darker isFilled=true>
           <Footer info />
         </PageSection>
