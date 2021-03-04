@@ -6,6 +6,13 @@
               - software-factory/re-sf
               - software-factory/re-patternfly
               - software-factory/res-remoteapi
+        - pnpm-rpmbuild:
+            required-projects:
+              - software-factory/re-sf
+              - software-factory/re-patternfly
+              - software-factory/res-remoteapi
+            vars:
+              pnpm_install: "--shamefully-hoist"
     gate: *jobs
     release:
       jobs:
