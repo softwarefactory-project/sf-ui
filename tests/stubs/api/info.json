@@ -54,6 +54,10 @@
     {
         "name": "grafana",
         "path": "/grafana"
+    },
+    {
+        "name": "status",
+        "link": "/status"
     }
   ],
   "version": "3.6",
@@ -70,12 +74,6 @@
       {
         "name": "Nodepool",
         "link": "/docs/nodepool"
-      }
-    ],
-    "status": [
-      {
-        "name": "Status",
-        "link": "/status"
       }
     ],
     "contact": [
