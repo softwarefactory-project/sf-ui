@@ -88,6 +88,7 @@ module Asset = {
     let cgit = logo("CGIT_icon.svg");
     let repoxplorer = logo("repoXplorer_icon.svg");
     let hound = logo("Hound_icon.svg");
+    let grafana = logo("Grafana_icon.svg");
     let avatar =
       require(
         "@patternfly/react-core/src/components/Avatar/examples/avatarImg.svg",
