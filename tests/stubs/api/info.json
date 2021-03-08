@@ -50,6 +50,10 @@
     {
       "name": "kibana",
       "path": "/app/analytics"
+    },
+    {
+        "name": "grafana",
+        "path": "/grafana"
     }
   ],
   "version": "3.6",
