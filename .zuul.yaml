@@ -1,18 +1,11 @@
 - project:
     check: &jobs
       jobs:
-        - pnpm-test:
+        - pnpm-rpmbuild:
             required-projects:
               - software-factory/re-sf
               - software-factory/re-patternfly
               - software-factory/res-remoteapi
-    gate: *jobs
-    release:
-      jobs:
-        - pnpm-rpm-publish:
-            required-projects:
-              - software-factory/re-sf
-              - software-factory/re-patternfly
             vars:
               scratch_build: false
               pnpm_install: "--shamefully-hoist"
