@@ -13,6 +13,7 @@
             required-projects:
               - software-factory/re-sf
               - software-factory/re-patternfly
+              - software-factory/res-remoteapi
             vars:
               scratch_build: false
               pnpm_install: "--shamefully-hoist"

@@ -1,6 +1,6 @@
 {
   "name": "@softwarefactory-project/sf-ui",
-  "version": "0.2.0",
+  "version": "0.2.2",
   "description": "The patternfly based user interface for software factory",
   "scripts": {
     "build": "bsb -make-world",
