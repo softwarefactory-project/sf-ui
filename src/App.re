@@ -121,7 +121,7 @@ module Service = {
       | "hound" => displayLogo(Asset.Logo.hound, "Hound")
       | "cgit" => displayLogo(Asset.Logo.cgit, "CGIT")
       | "grafana" => displayLogo(Asset.Logo.grafana, "Grafana")
-      | "status" => displayLogo(Asset.Logo.status, "Status")
+      | "status" => displayLogo(Asset.Logo.status, "Zull Status")
       | _ => React.null
       };
     };
