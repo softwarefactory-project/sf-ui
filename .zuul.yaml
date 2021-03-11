@@ -1,15 +1,7 @@
 - project:
     check: &jobs
       jobs:
-        - pnpm-test:
-            required-projects:
-              - software-factory/re-sf
-              - software-factory/re-patternfly
-              - software-factory/res-remoteapi
-    gate: *jobs
-    release:
-      jobs:
-        - pnpm-rpm-publish:
+        - pnpm-rpmbuild:
             required-projects:
               - software-factory/re-sf
               - software-factory/re-patternfly
