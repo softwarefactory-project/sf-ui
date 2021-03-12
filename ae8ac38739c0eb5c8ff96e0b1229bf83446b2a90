@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "6a9a53e7_ca6fb743",
+        "filename": "src/App.re",
+        "patchSetId": 1
+      },
+      "lineNbr": 124,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2021-03-12T13:25:50Z",
+      "side": 1,
+      "message": "typo",
+      "revId": "ae8ac38739c0eb5c8ff96e0b1229bf83446b2a90",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
