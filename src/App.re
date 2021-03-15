@@ -18,7 +18,7 @@ let renderList = (xs, f) => xs->Belt.List.map(f)->listToReactArray;
 let str = React.string;
 
 let renderLink = (l: SF.Info.link) =>
-  <p>
+  <p key={l.name}>
     <a href={l.link} style={ReactDOM.Style.make(~color="#bee1f4", ())}>
       l.name->React.string
     </a>
