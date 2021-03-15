@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c5fada2a_e2364e96",
+        "filename": "src/App.re",
+        "patchSetId": 2
+      },
+      "lineNbr": 286,
+      "author": {
+        "id": 7
+      },
+      "writtenOn": "2021-03-15T18:09:49Z",
+      "side": 1,
+      "message": "Perhaps make a \u003ca href\u003d...\u003etenant deployment\u003c/a\u003e ?",
+      "range": {
+        "startLine": 286,
+        "startChar": 22,
+        "endLine": 286,
+        "endChar": 69
+      },
+      "revId": "142714443e330d970df26a59addd330afb17605e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": true
+    }
+  ]
+}
