@@ -251,7 +251,8 @@ module ProjectCard = {
 
 module TenantCard = {
   [@react.component]
-  let make = (~tenant: SF.V2.Tenant.t) => {
+  let make = (~tenant: SF.V2.Tenant.t, ~puburl: string) => {
+    let isLocal = tenant.url == puburl;
     <Card key={tenant.name} isCompact=true style=boxStyle>
       <CardTitle style=boxTitleStyle>
         <span> {tenant.name |> str} </span>
@@ -266,11 +267,28 @@ module TenantCard = {
       </CardTitle>
       <CardBody>
         <Stack hasGutter=true>
-          <Bullseye> "This tenant owns the following projects" </Bullseye>
-          {tenant.projects
-           ->renderList(project =>
-               <ProjectCard key={project.name} project isSmall=true />
-             )}
+          {isLocal->renderIf(
+             <Stack>
+               <Bullseye> "This tenant owns the following projects" </Bullseye>
+               {tenant.projects
+                ->renderList(project =>
+                    <ProjectCard key={project.name} project isSmall=true />
+                  )}
+             </Stack>,
+           )}
+          {isLocal->renderIfNot(
+             {
+               let buildTenantUrl =
+                 tenant.url |> Js.String.replace("/manage", "");
+               <Bullseye>
+                 {buildTenantUrl->buildURL(
+                    {
+                      "Tenant deployment - " ++ buildTenantUrl;
+                    },
+                  )}
+               </Bullseye>;
+             },
+           )}
         </Stack>
       </CardBody>
     </Card>;
@@ -280,10 +298,10 @@ module TenantCard = {
 module WelcomePage = {
   module TenantList = {
     [@react.component]
-    let make = (~tenants: list(SF.V2.Tenant.t)) => {
+    let make = (~tenants: list(SF.V2.Tenant.t), ~puburl: string) => {
       <Stack hasGutter=true>
         {tenants->renderList(tenant => {
-           <TenantCard key={tenant.name} tenant />
+           <TenantCard key={tenant.name} tenant puburl />
          })}
       </Stack>;
     };
@@ -329,7 +347,10 @@ module WelcomePage = {
            | RemoteData.Loading(None) => <p> {"Loading..." |> str} </p>
            | RemoteData.Loading(Some(resources))
            | RemoteData.Success(resources) =>
-             <TenantList tenants={resources.tenants} />
+             <TenantList
+               tenants={resources.tenants}
+               puburl={resources.puburl}
+             />
            | RemoteData.Failure(title) => <Alert variant=`Danger title />
            }}
         </GridItem>
