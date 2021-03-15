@@ -1,4 +1,5 @@
 {
+  "public-url": "https://softwarefactory-project.io/manage",
   "resources": {
     "tenants": {
       "local": {
@@ -6,6 +7,16 @@
         "description": "The local tenant",
         "url": "https://softwarefactory-project.io/manage",
         "name": "local"
+      },
+      "rdoproject.org": {
+        "default-connection": "rdoproject.org",
+        "description": "The rdoproject.org tenant",
+        "tenant-options": {
+          "zuul/report-build-page": true,
+          "zuul/web-root": "https://review.rdoproject.org/zuul/"
+        },
+        "url": "https://review.rdoproject.org/manage",
+        "name": "rdoproject.org"
       }
     },
     "repos": {
@@ -16,8 +27,12 @@
     },
     "projects": {
       "DLRN": {
-        "contacts": ["jpena@redhat.com"],
-        "mailing-lists": ["dlrn@redhat.com"],
+        "contacts": [
+          "jpena@redhat.com"
+        ],
+        "mailing-lists": [
+          "dlrn@redhat.com"
+        ],
         "description": "DLRN builds and maintains yum repositories following OpenStack uptream commit streams",
         "issue-tracker-url": "https://tree.taiga.io/project/morucci-software-factory",
         "name": "DLRN",
@@ -30,7 +45,9 @@
           {
             "rdo-infra/puppet-dlrn": {
               "connection": "rdoproject.org",
-              "zuul/include": ["job"]
+              "zuul/include": [
+                "job"
+              ]
             }
           },
           {
