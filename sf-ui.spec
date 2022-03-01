@@ -5,7 +5,7 @@
 %define _binary_payload w9.gzdio
 
 Name:		sf-ui
-Version:	0.2.0
+Version:	0.2.1
 Release:	1%{?dist}
 Summary:	The software-factory web interface
 
@@ -31,6 +31,9 @@ mv * %{buildroot}/usr/share/sf-ui/
 /usr/share/sf-ui
 
 %changelog
+* Tue Mar  1 2022 Fabien Boucher <fboucher@redhat.com> - 0.2.1-1
+- Bump to force update of re-sf (to fix gitweb->gitiles location)
+
 * Thu Mar  4 2021 Tristan Cacqueray <tdecacqu@redhat.com> - 0.2.0-1
 - Update sf-ui file locations
 
