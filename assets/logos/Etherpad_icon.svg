@@ -1,34 +1,71 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" width="62.5" height="62.5" viewBox="0 0 60.818816 60.818816" id="svg2" version="1.1" inkscape:version="0.48.2 r9819" sodipodi:docname="logo_plain.svg" inkscape:export-filename="D:\Eigene Dateien Marcel\dev\etherpad-lite\ether.github.com\img\logo.png" inkscape:export-xdpi="288" inkscape:export-ydpi="288">
-  <title id="title3033">Etherpad</title>
-  <metadata id="metadata9">
-    <rdf:RDF>
-      <cc:Work rdf:about="">
-        <dc:format>image/svg+xml</dc:format>
-        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-        <dc:title>Etherpad</dc:title>
-        <dc:date>2012-11-20</dc:date>
-        <dc:creator>
-          <cc:Agent>
-            <dc:title>Marcel Klehr</dc:title>
-          </cc:Agent>
-        </dc:creator>
-        <cc:license rdf:resource="http://creativecommons.org/licenses/by-sa/3.0/"/>
-      </cc:Work>
-      <cc:License rdf:about="http://creativecommons.org/licenses/by-sa/3.0/">
-        <cc:permits rdf:resource="http://creativecommons.org/ns#Reproduction"/>
-        <cc:permits rdf:resource="http://creativecommons.org/ns#Distribution"/>
-        <cc:requires rdf:resource="http://creativecommons.org/ns#Notice"/>
-        <cc:requires rdf:resource="http://creativecommons.org/ns#Attribution"/>
-        <cc:permits rdf:resource="http://creativecommons.org/ns#DerivativeWorks"/>
-        <cc:requires rdf:resource="http://creativecommons.org/ns#ShareAlike"/>
-      </cc:License>
-    </rdf:RDF>
-  </metadata>
-  <defs id="defs7"/>
-  <sodipodi:namedview pagecolor="#ffffff" bordercolor="#666666" borderopacity="1" objecttolerance="10" gridtolerance="10" guidetolerance="10" inkscape:pageopacity="0" inkscape:pageshadow="2" inkscape:window-width="1600" inkscape:window-height="838" id="namedview5" showgrid="false" inkscape:zoom="6.84" inkscape:cx="-26.151689" inkscape:cy="41.02112" inkscape:window-x="-8" inkscape:window-y="-8" inkscape:window-maximized="1" inkscape:current-layer="svg2" fit-margin-top="0" fit-margin-left="0" fit-margin-right="0" fit-margin-bottom="0" units="pt" inkscape:document-units="pt"/>
-  <path id="path3039" style="fill:none;stroke:#0e300b;stroke-width:1.82456445999999990;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" d="m 29.936221,16.739417 2.29719,22.733139 m 13.719866,9.37008 -13.76749,-9.370078 -18.010202,8.570208" inkscape:connector-curvature="0" sodipodi:nodetypes="ccccc"/>
-  <path id="path3037" style="fill:none;stroke:#185014;stroke-width:1.82456445999999990;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" d="m 29.838272,16.44373 -16.150146,31.7248 15.819886,9.28846 0.31239,-47.231053 -0.04763,6.122093 16.180498,32.494606 -16.445267,8.426583 m -4.860544,-29.201644 5.377626,3.10269 5.443554,-3.348981 m -16.056819,9.945478 10.613265,6.343524 10.755253,-5.749067"/>
-  <path style="fill:none;stroke:#185014;stroke-width:1.82456445999999990;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" d="M 21.553773,9.1091165 C 22.743554,-0.86550773 35.946656,-2.7841873 38.218887,8.8403001" id="Unbenannt #2"/>
-  <path sodipodi:type="arc" style="fill:#b3b3b3;fill-opacity:1;stroke:#185014;stroke-width:0.79850829000000001;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" id="path3756" sodipodi:cx="7.1760798" sodipodi:cy="10.032578" sodipodi:rx="0.34835339" sodipodi:ry="0.37477049" d="m 7.5244331,10.032578 a 0.34835339,0.37477049 0 1 1 -0.6967067,0 0.34835339,0.37477049 0 1 1 0.6967067,0 z" transform="matrix(3.1221913,0,0,2.972881,7.3844024,-20.305626)"/>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="355px" height="355px" viewBox="0 0 355 355" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Group 10</title>
+    <defs>
+        <!-- top line -->
+          <linearGradient xmlns="http://www.w3.org/2000/svg" x1="50%" y1="-53.318164%" x2="50%" y2="109.654497%" id="linearGradient-1">
+            <stop stop-color="#65D09B" offset="0%"/>
+            <stop stop-color="#4DB38E" offset="100%"/>
+        </linearGradient>
+        <rect id="path-4" x="41" y="110" width="142" height="25" rx="12.5">
+          <animate attributeName="width" from="0" to="142" dur="3s" fill="freeze"/>
+        </rect>
+        <filter x="-11.3%" y="-32.0%" width="122.5%" height="228.0%" filterUnits="objectBoundingBox" id="filter-5">
+            <feOffset dx="0" dy="8" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="4" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.0568181818 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+
+        <!-- middle line -->
+        <rect id="path-2" x="42" y="167" width="168" height="27" rx="13.5">
+          <animate attributeName="width" from="0" to="168" dur="5s" fill="freeze"/>
+        </rect>
+        <filter x="-9.5%" y="-29.6%" width="119.0%" height="218.5%" filterUnits="objectBoundingBox" id="filter-3">
+            <feOffset dx="0" dy="8" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="4" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.0568181818 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+
+        <!-- bottom line -->
+        <rect id="path-6" x="41" y="226" width="105" height="25" rx="12.5">
+          <animate attributeName="width" from="0" to="105" dur="2s" fill="freeze"/>
+        </rect>
+        <filter x="-15.2%" y="-32.0%" width="130.5%" height="228.0%" filterUnits="objectBoundingBox" id="filter-7">
+            <feOffset dx="0" dy="8" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="4" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.0568181818 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group-5-Copy-2" transform="translate(-415.000000, -351.000000)">
+            <g id="Group-10" transform="translate(415.000000, 351.000000)">
+                <g id="Group-9" transform="translate(0.000000, 15.000000)">
+                    <!-- small radio wave -->
+                    <rect xmlns="http://www.w3.org/2000/svg" id="Rectangle-Copy-54" fill="url(#linearGradient-1)" x="0" y="0" width="340" height="340" rx="70"/>
+                    <path d="M237.612214,138.157654 C234.725783,135.28192 230.051254,135.279644 227.164823,138.157654 C224.278392,141.035663 224.278392,145.698831 227.164823,148.57684 C234.93988,156.329214 239.222735,166.601382 239.222735,177.499403 C239.222735,188.397423 234.93988,198.669591 227.164823,206.424696 C224.278392,209.30043 224.278392,213.965873 227.164823,216.841607 C228.608267,218.280384 230.497251,219 232.388518,219 C234.277503,219 236.16877,218.280384 237.612214,216.841607 C248.18012,206.304532 254,192.334147 254,177.499403 C254,162.665114 248.18012,148.694728 237.612214,138.157654 Z" id="Path-Copy-26" fill-opacity="0.200482" fill="#000000" fill-rule="nonzero" opacity="0.754065225">
+                      <animate attributeName="opacity" from="0" to="1" dur="3s" repeatCount="indefinite"/>
+                    </path>
+                    <!-- large radio wave -->
+                    <path d="M267.333026,113.158661 C264.51049,110.280446 259.939438,110.280446 257.116902,113.158661 C254.294366,116.039154 254.294366,120.709078 257.116902,123.586837 C285.703837,152.763042 285.703837,200.237641 257.116902,229.413847 C254.294366,232.292061 254.294366,236.96153 257.116902,239.839744 C258.528393,241.280219 260.375562,242 262.224964,242 C264.074365,242 265.921535,241.279763 267.333026,239.837011 C301.555658,204.912576 301.555658,148.084007 267.333026,113.158661 Z" id="Path-Copy-27" fill-opacity="0.250565" fill="#131514" fill-rule="nonzero" opacity="0.754065225">
+                      <animate attributeName="opacity" from="0" to="1" dur="3s" repeatCount="indefinite"/>
+                    </path>
+                    <!-- top line -->
+                    <g id="Rectangle-Copy-55">
+                        <use fill="black" fill-opacity="1" filter="url(#filter-3)" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#path-2"/>
+                        <use fill="#FFFFFF" fill-rule="evenodd" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#path-2"/>
+                    </g>
+                    <!-- middle line -->
+                    <g id="Rectangle-Copy-56">
+                        <use fill="black" fill-opacity="1" filter="url(#filter-5)" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#path-4"/>
+                        <use fill="#FFFFFF" fill-rule="evenodd" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#path-4"/>
+                    </g>
+                    <!-- bottom line -->
+                    <g id="Rectangle-Copy-57">
+                        <use fill="black" fill-opacity="1" filter="url(#filter-7)" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#path-6"/>
+                        <use fill="#FFFFFF" fill-rule="evenodd" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#path-6"/>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
 </svg>
