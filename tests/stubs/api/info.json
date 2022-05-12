@@ -48,7 +48,7 @@
       "path": "/repoxplorer"
     },
     {
-      "name": "kibana",
+      "name": "opensearchdashboards",
       "path": "/app/analytics"
     },
     {
