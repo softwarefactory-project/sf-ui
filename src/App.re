@@ -95,6 +95,7 @@ module Asset = {
     let hound = logo("Hound_icon.svg");
     let grafana = logo("Grafana_icon.svg");
     let status = logo("Status_icon.svg");
+    let keycloak = logo("Keycloak_icon.svg");
     let avatar =
       require(
         "@patternfly/react-core/src/components/Avatar/examples/avatarImg.svg",
@@ -115,6 +116,7 @@ module Service = {
         </>;
 
       switch (name) {
+      | "keycloak" => displayLogo(Asset.Logo.keycloak, "Authentication")
       | "gerrit" => displayLogo(Asset.Logo.gerrit, "Gerrit")
       | "zuul" => displayLogo(Asset.Logo.zuul, "Zuul")
       | "nodepool" => displayLogo(Asset.Logo.nodepool, "Nodepool")

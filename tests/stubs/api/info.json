@@ -1,14 +1,7 @@
 {
   "auths": {
-    "oauth": [
-      "github"
-    ],
-    "other": [
-      {
-        "name": "openid",
-        "text": "Login with LaunchPad"
-      }
-    ]
+    "oauth": [],
+    "other": []
   },
   "services": [
     {
@@ -50,6 +43,10 @@
     {
       "name": "grafana",
       "path": "/grafana"
+    },
+    {
+      "name": "keycloak",
+      "path": "/auth/realms/SF/account/"
     }
   ],
   "version": "3.6",
