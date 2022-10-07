@@ -2,7 +2,13 @@
 
 ## Setup
 
-Install yarnpkg and nodejs: `sudo dnf install -y nodejs yarnpkg`
+Checkout a nix-shell to get a pnpm version than work fine for that project (6.20.1). The CI is currenlty using the same version:
+
+```
+nix-shell -I nixpkgs=https://github.com/NixOS/nixpkgs/archive/0a4ac64c8f0a55510f4b89eb64080912508410ee.tar.gz -p ocamlPackages.merlin nodePackages.pnpm
+```
+
+Alternatively to the nix's command you should be able to run "pmpm install pnpm@6.20.1".
 
 Then setup the project:
 
@@ -10,7 +16,6 @@ Then setup the project:
 for dep in re-sf re-patternfly res-remoteapi; do
   git clone https://softwarefactory-project.io/r/software-factory/${dep} ../${dep}
 done
-podman run --rm quay.io/software-factory/nodejs-builder cat /usr/libexec/shake/yarn.lock > yarn.lock
 pnpm install --shamefully-hoist
 pnpm start
 ```
@@ -34,6 +39,10 @@ Distribute with:
 pnpm dist
 # Open browser in dist/
 ```
+
+## VSCode
+Run vscode from your nix-shell and install the reason plugin named: `jaredly.reason-vscode`.
+Syntax hightlight and check should work out of the box.
 
 ## RPM Build
 
