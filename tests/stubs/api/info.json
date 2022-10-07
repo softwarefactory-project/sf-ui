@@ -44,16 +44,12 @@
       "path": "/paste"
     },
     {
-      "name": "repoxplorer",
-      "path": "/repoxplorer"
-    },
-    {
       "name": "opensearchdashboards",
       "path": "/app/analytics"
     },
     {
-        "name": "grafana",
-        "path": "/grafana"
+      "name": "grafana",
+      "path": "/grafana"
     }
   ],
   "version": "3.6",
