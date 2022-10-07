@@ -17,6 +17,12 @@ let renderList = (xs, f) => xs->Belt.List.map(f)->listToReactArray;
 
 let str = React.string;
 
+let notEmpty = xs =>
+  switch (xs) {
+  | [] => false
+  | _ => true
+  };
+
 let renderLink = (l: SF.Info.link) =>
   <p key={l.name}>
     <a href={l.link} style={ReactDOM.Style.make(~color="#bee1f4", ())}>
@@ -397,7 +403,7 @@ module SFAbout = {
         </TextListItem>
         <TextListItem component=`Dd> info.version->React.string </TextListItem>
         {info.links.contact
-         ->UserLogin.notEmpty
+         ->notEmpty
          ->renderIf(
              <>
                <TextListItem component=`Dt>
@@ -413,9 +419,7 @@ module SFAbout = {
 };
 
 module Main = (Fetcher: RemoteAPI.HTTPClient) => {
-  module Auth' = Auth.Hook(Fetcher);
   module Hook = Api.Hook(Fetcher);
-  module UserSettingsPage = UserSettings.Page(Fetcher);
 
   let getHeaderLogo = (info: SF.Info.t) =>
     <Brand
@@ -453,7 +457,7 @@ module Main = (Fetcher: RemoteAPI.HTTPClient) => {
               </Bullseye>
             </GridItem>
             {info.links.contact
-             ->UserLogin.notEmpty
+             ->notEmpty
              ->renderIf(
                  <GridItem span=PFTypes.Column._4>
                    <Bullseye>
@@ -473,7 +477,6 @@ module Main = (Fetcher: RemoteAPI.HTTPClient) => {
   module MainWithContext = {
     [@react.component]
     let make = (~info: SF.Info.t, ~resourcesHook: Api.resources_hook_t) => {
-      let auth = Auth'.use(~defaultBackend=Auth.Cauth);
       let (modal, setModal) = React.useState(_ => false);
       let header =
         <PageHeader
@@ -485,7 +488,6 @@ module Main = (Fetcher: RemoteAPI.HTTPClient) => {
                   <Icons.Help />
                 </Button>
               </PageHeaderToolsItem>
-              <UserLogin.Header auth />
             </PageHeaderTools>
           }
         />;
@@ -497,20 +499,6 @@ module Main = (Fetcher: RemoteAPI.HTTPClient) => {
            | [] => <WelcomePage info resourcesHook />
            | ["project", project_id] =>
              <ProjectPage project_id resourcesHook />
-           | ["login"] =>
-             let back =
-               Belt.Option.getWithDefault(
-                 getBack(reacturl.search),
-                 getBaseUrl(),
-               );
-             <UserLogin.Page info auth back />;
-           | ["logout"] => <UserLogin.Logout auth />
-           | ["auth", "settings"] =>
-             switch (auth) {
-             | ({user: Some(user)}, _) =>
-               <UserSettingsPage username={user.name} />
-             | _ => <p> {"You need to login first" |> str} </p>
-             }
            | _ => <p> {"Not found" |> str} </p>
            }}
         </PageSection>
