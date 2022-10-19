@@ -38,7 +38,7 @@
     },
     {
       "name": "opensearchdashboards",
-      "path": "/app/analytics"
+      "path": "/analytics"
     },
     {
       "name": "grafana",
