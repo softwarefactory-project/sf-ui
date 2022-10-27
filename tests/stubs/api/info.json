@@ -37,7 +37,7 @@
       "path": "/paste"
     },
     {
-      "name": "opensearchdashboards",
+      "name": "opensearch-dashboards",
       "path": "/analytics"
     },
     {
